@@ -1,0 +1,306 @@
+<div class="landing-page-root">
+
+  <!-- ========================================================
+       1. HERO BANNER SECTION (Farm/Crop landscape, NO people photos)
+  ======================================================== -->
+  <section class="landing-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Connecting Farmers<br>
+          <span class="highlight">with Better Opportunities</span>
+        </h1>
+        <p class="hero-subtitle">
+          CropDeal is an agricultural marketplace that helps farmers, dealers and delivery partners connect, trade and grow together.
+        </p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       2. AVAILABLE CROPS SECTION (Exact 12 crops from UI design)
+  ======================================================== -->
+  <section class="section-available-crops">
+    <div class="crops-container">
+      <!-- Section Header -->
+      <div class="section-header">
+        <h2 class="title-with-bar">
+          <span class="accent-bar"></span>
+          Available Crops
+        </h2>
+        <p class="subtitle">
+          Explore fresh agricultural produce directly from verified farmers. Click any crop to view complete details, farmer credentials, and reviews.
+        </p>
+      </div>
+
+      <!-- 12 Crop Cards Grid (4 columns x 3 rows) -->
+      <div class="crops-grid">
+        <div *ngFor="let crop of displayedCrops" class="crop-card clickable-crop-card" (click)="openCropDetails(crop)">
+          <!-- Card Image & Badges -->
+          <div class="crop-media-wrap">
+            <img
+              [src]="crop.image"
+              [alt]="crop.name"
+              class="crop-image"
+              (error)="onCropImageError($event)" />
+
+            <!-- Grade Badge -->
+            <span
+              class="grade-badge"
+              [class.grade-a]="crop.grade === 'Grade A'"
+              [class.grade-b]="crop.grade === 'Grade B'">
+              {{ crop.grade }}
+            </span>
+          </div>
+
+          <!-- Card Content -->
+          <div class="crop-info">
+            <h3 class="crop-name">{{ crop.name }}</h3>
+
+            <div class="crop-meta-row">
+              <div class="price-col">
+                <span class="currency">₹</span>
+                <span class="price-amount">{{ crop.pricePerQuintal | number }}</span>
+                <span class="price-unit">/ Quintal</span>
+              </div>
+              <div class="details-col">
+                <div class="meta-item location">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span>{{ crop.location }}</span>
+                </div>
+                <div class="meta-item availability">
+                  <i class="fa-solid fa-scale-balanced"></i>
+                  <span>{{ crop.availableQuintal }} Quintal Available</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Actions: Buy Now & Negotiate -->
+            <div class="crop-actions">
+              <button
+                type="button"
+                class="btn-card btn-buy-now"
+                (click)="onBuyNow($event, crop)">
+                <i class="fa-solid fa-cart-shopping"></i> Buy Now
+              </button>
+              <button
+                type="button"
+                class="btn-card btn-negotiate"
+                (click)="onNegotiate($event, crop)">
+                <i class="fa-regular fa-comment-dots"></i> Negotiate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Bar: < 1 2 3 4 5 > -->
+      <div class="pagination-bar">
+        <button
+          type="button"
+          class="btn-pag-nav"
+          [disabled]="currentPage === 1"
+          (click)="setPage(currentPage - 1)"
+          aria-label="Previous page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <button
+          *ngFor="let p of pages"
+          type="button"
+          class="btn-pag-num"
+          [class.active]="currentPage === p"
+          (click)="setPage(p)">
+          {{ p }}
+        </button>
+
+        <button
+          type="button"
+          class="btn-pag-nav"
+          [disabled]="currentPage === totalPages"
+          (click)="setPage(currentPage + 1)"
+          aria-label="Next page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       3. FOOTER (Matching Design Mockup)
+  ======================================================== -->
+  <footer class="landing-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand & Socials -->
+        <div class="footer-col footer-brand">
+          <div class="brand-logo">
+            <div class="logo-leaf"><i class="fa-solid fa-leaf"></i></div>
+            <span class="brand-text">CropDeal</span>
+          </div>
+          <p class="brand-desc">
+            Connecting farmers, dealers and delivery partners for a better agricultural ecosystem.
+          </p>
+          <div class="footer-socials">
+            <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+          <div class="copyright">
+            &copy; 2026 CropDeal. All rights reserved.
+          </div>
+        </div>
+
+        <!-- Col 2: Quick Links -->
+        <div class="footer-col footer-links">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a routerLink="/">Home</a></li>
+            <li><a routerLink="/prices">Mandhi Price</a></li>
+            <li><a routerLink="/bidding">Live Bidding</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Contact Info -->
+        <div class="footer-col footer-contact">
+          <h4>Contact</h4>
+          <ul class="contact-list">
+            <li>
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Coimbatore, Tamil Nadu, India</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-phone"></i>
+              <span>+91 98765 43210</span>
+            </li>
+            <li>
+              <i class="fa-regular fa-envelope"></i>
+              <span>support&#64;cropdeal.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================
+       4. QUICK MODAL: BUY NOW
+  ======================================================== -->
+  <div class="modal-backdrop" *ngIf="isOrderModalOpen && selectedCrop" (click)="isOrderModalOpen = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-cart-shopping text-green"></i> Direct Procurement — {{ selectedCrop.name }}</h3>
+        <button class="btn-close" (click)="isOrderModalOpen = false">&times;</button>
+      </div>
+      <form (ngSubmit)="confirmOrder()">
+        <div class="modal-body">
+          <div class="crop-summary-pill">
+            <span class="crop-tag">{{ selectedCrop.grade }}</span>
+            <span class="crop-loc"><i class="fa-solid fa-location-dot"></i> {{ selectedCrop.location }}</span>
+            <span class="crop-rate">₹{{ selectedCrop.pricePerQuintal }}/Quintal</span>
+          </div>
+
+          <div class="form-group">
+            <label>Order Quantity (Quintals) *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="orderQuantity"
+              name="orderQty"
+              min="1"
+              [max]="selectedCrop.availableQuintal"
+              required />
+            <small class="help-text">Max available: {{ selectedCrop.availableQuintal }} Quintals</small>
+          </div>
+
+          <div class="form-group">
+            <label>Delivery Address / Warehouse *</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="orderAddress"
+              name="delAddress"
+              required />
+          </div>
+
+          <div class="order-calc-box">
+            <div class="calc-row">
+              <span>Rate per Quintal:</span>
+              <strong>₹{{ selectedCrop.pricePerQuintal | number }}</strong>
+            </div>
+            <div class="calc-row total">
+              <span>Total Payable Amount:</span>
+              <strong class="total-price">₹{{ (orderQuantity * selectedCrop.pricePerQuintal) | number }}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="isOrderModalOpen = false">Cancel</button>
+          <button type="submit" class="btn-modal-submit">
+            <i class="fa-solid fa-lock"></i> Confirm &amp; Secure in Escrow
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       5. QUICK MODAL: NEGOTIATE / COUNTER OFFER
+  ======================================================== -->
+  <div class="modal-backdrop" *ngIf="isNegotiateModalOpen && selectedCrop" (click)="isNegotiateModalOpen = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fa-regular fa-comment-dots text-green"></i> Negotiate Price — {{ selectedCrop.name }}</h3>
+        <button class="btn-close" (click)="isNegotiateModalOpen = false">&times;</button>
+      </div>
+      <form (ngSubmit)="submitNegotiation()">
+        <div class="modal-body">
+          <div class="crop-summary-pill">
+            <span class="crop-tag">{{ selectedCrop.grade }}</span>
+            <span class="crop-loc"><i class="fa-solid fa-location-dot"></i> {{ selectedCrop.location }}</span>
+            <span class="crop-rate">Asking: ₹{{ selectedCrop.pricePerQuintal }}/Quintal</span>
+          </div>
+
+          <p class="modal-hint">
+            Propose a counter rate to the producer. Once submitted, the farmer can accept, decline, or counter your offer in the Negotiations hub.
+          </p>
+
+          <div class="form-group">
+            <label>Your Counter Offer Price (₹ / Quintal) *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="negCounterPrice"
+              name="negPrice"
+              min="100"
+              step="50"
+              required />
+          </div>
+
+          <div class="form-group">
+            <label>Quantity Desired (Quintals) *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="negQuantity"
+              name="negQty"
+              min="1"
+              [max]="selectedCrop.availableQuintal"
+              required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="isNegotiateModalOpen = false">Cancel</button>
+          <button type="submit" class="btn-modal-submit">
+            <i class="fa-regular fa-paper-plane"></i> Send Counter Proposal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+

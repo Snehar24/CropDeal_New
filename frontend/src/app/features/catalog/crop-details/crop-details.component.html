@@ -1,0 +1,276 @@
+<div class="crop-details-page">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-container">
+    <div class="breadcrumb-inner">
+      <a routerLink="/catalog" class="crumb-link"><i class="fa-solid fa-house"></i> Home</a>
+      <span class="crumb-sep">/</span>
+      <a routerLink="/catalog" class="crumb-link">Crops</a>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-active">{{ crop?.commodity || 'Paddy (Rice)' }}</span>
+    </div>
+  </div>
+
+  <div class="details-container" *ngIf="crop">
+    <div class="details-main-grid">
+
+      <!-- Left Column: Gallery Carousel + Thumbnails -->
+      <div class="gallery-column">
+        <div class="main-carousel">
+          <img [src]="galleryImages[selectedImageIndex]" [alt]="crop.commodity" class="active-image" (error)="onCropImageError($event)" />
+          <div class="carousel-nav">
+            <button class="nav-arrow prev-arrow" (click)="prevImage()" title="Previous Image">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="counter-badge">{{ selectedImageIndex + 1 }} / {{ galleryImages.length }}</span>
+            <button class="nav-arrow next-arrow" (click)="nextImage()" title="Next Image">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="thumbnail-strip">
+          <button
+            *ngFor="let img of galleryImages; let i = index"
+            class="thumb-btn"
+            [class.active]="i === selectedImageIndex"
+            (click)="selectImage(i)">
+            <img [src]="img" [alt]="'Thumbnail ' + (i + 1)" (error)="onCropImageError($event)" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Crop Info, Specs, Quantity Stepper, Actions -->
+      <div class="info-column">
+        <div class="title-header">
+          <div class="badge-row">
+            <span class="grade-badge">Grade {{ crop.grade || 'A+' }}</span>
+            <span class="verified-pill"><i class="fa-solid fa-circle-check"></i> Quality Certified</span>
+          </div>
+          <h1 class="crop-name">{{ crop.commodity }}</h1>
+          <div class="crop-loc">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>{{ crop.district }}, {{ crop.state }}</span>
+          </div>
+        </div>
+
+        <!-- Price Banner Card -->
+        <div class="price-banner">
+          <div class="price-main">
+            <span class="currency">₹</span>
+            <span class="amount">{{ pricePerQuintal | number:'1.0-0' }}</span>
+            <span class="unit-label">/ Quintal</span>
+          </div>
+          <div class="sub-price">
+            ₹{{ crop.pricePerKg | number:'1.2-2' }} per kg (ex-farm gate)
+          </div>
+        </div>
+
+        <!-- Specifications Grid -->
+        <div class="specs-card">
+          <h3 class="specs-title">Produce Specifications</h3>
+          <div class="specs-grid">
+            <div class="spec-row">
+              <span class="spec-key">Commodity</span>
+              <span class="spec-val">{{ crop.commodity }}</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Quality Grade</span>
+              <span class="spec-val">Grade {{ crop.grade }}</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Moisture Content</span>
+              <span class="spec-val">12% (Standard Dry)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Harvest Season</span>
+              <span class="spec-val">Kharif 2026</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Available Quantity</span>
+              <span class="spec-val">{{ crop.quantity | number }} Quintal</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-key">Harvest Batch Date</span>
+              <span class="spec-val">October 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity Stepper & Price Calculation -->
+        <div class="purchase-box">
+          <label class="stepper-label">Select Order Quantity (Quintal)</label>
+          <div class="stepper-row">
+            <div class="stepper-control">
+              <button class="step-btn" (click)="decrementQty()" [disabled]="selectedQty <= 10">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span class="step-val">{{ selectedQty }} Quintal</span>
+              <button class="step-btn" (click)="incrementQty()" [disabled]="selectedQty >= crop.quantity">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+            <div class="calc-total">
+              <span class="total-lbl">Estimated Total:</span>
+              <strong class="total-val">₹{{ estimatedTotal | number:'1.0-0' }}</strong>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button class="btn-buy" (click)="openOrder()">
+              <i class="fa-solid fa-bolt"></i> Buy Now
+            </button>
+            <button class="btn-neg" (click)="openNegotiate()">
+              <i class="fa-solid fa-comments-dollar"></i> Negotiate Price
+            </button>
+          </div>
+        </div>
+
+        <!-- Farmer Details Card -->
+        <div class="farmer-card">
+          <div class="seller-avatar-badge">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div class="farmer-info">
+            <div class="name-row">
+              <h4>{{ farmer?.name || crop.farmerName || 'Registered Farmer' }}</h4>
+              <span class="farmer-tag"><i class="fa-solid fa-shield-halved"></i> Certified Farmer</span>
+              <span class="verified-pill" style="margin-left: 8px; background: #e8f5e9; color: #2e7d32; font-weight: 600; padding: 3px 8px; border-radius: 12px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-circle-check"></i> Verified
+              </span>
+            </div>
+            <div class="rating-row">
+              <span class="stars">★★★★★</span>
+              <span class="rating-num">{{ farmerRating }}</span>
+              <span class="reviews-count">({{ reviewCount }} verified reviews)</span>
+            </div>
+            <div class="meta-row">
+              <span><i class="fa-solid fa-location-dot"></i> {{ farmer?.farmLocation || farmer?.address || (crop.district + ', ' + crop.state) }}</span>
+              <span *ngIf="farmer?.phone"><i class="fa-solid fa-phone"></i> {{ farmer?.phone }}</span>
+              <span><i class="fa-solid fa-wheat-awn"></i> {{ crop.quantity | number }} Quintals In Stock</span>
+            </div>
+            <div class="subscribe-farmer-row" style="margin-top: 10px;">
+              <button type="button" class="btn btn-sm" [style.background]="isSubscribedToFarmer ? '#16A34A' : '#F1F5F9'" [style.color]="isSubscribedToFarmer ? '#FFF' : '#0F3D20'" style="border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; padding: 5px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" (click)="toggleSubscribeFarmer()">
+                <i class="fa-solid" [class.fa-bookmark]="isSubscribedToFarmer" [class.fa-bell]="!isSubscribedToFarmer"></i>
+                {{ isSubscribedToFarmer ? 'Subscribed to Farmer' : 'Subscribe to Farmer for Crop Alerts' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Farmer Reviews Section Matching Page 2 Bottom -->
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <h2>Farmer Reviews & Trader Ratings</h2>
+        <span class="verified-badge"><i class="fa-solid fa-check"></i> Escrow-Verified Buyers Only</span>
+      </div>
+
+      <div class="reviews-grid">
+        <div *ngFor="let rev of reviews | slice:0:3" class="review-card">
+          <div class="rev-top">
+            <div class="rev-stars">
+              <i class="fa-solid fa-star text-gold" *ngFor="let s of [1,2,3,4,5]" [class.muted-star]="s > (rev.rating || 5)"></i>
+            </div>
+            <span class="rev-date">{{ rev.createdAt ? (rev.createdAt | slice:0:10) : 'Recent' }}</span>
+          </div>
+          <p class="rev-text">"{{ rev.reviewText || 'Excellent produce quality, moisture strictly within specification. Seamless gate delivery.' }}"</p>
+          <div class="rev-author">
+            <div class="author-circle">{{ rev.dealerName ? rev.dealerName.charAt(0) : 'D' }}</div>
+            <div>
+              <strong>{{ rev.dealerName || 'Verified Agro Trader' }}</strong>
+              <small>Certified Grain Buyer</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Buy Now Order -->
+<div class="modal-backdrop" *ngIf="isOrderModalOpen" (click)="isOrderModalOpen = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-cart-shopping text-green"></i> Direct Purchase Order</h3>
+      <button class="close-btn" (click)="isOrderModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="order-crop-summary">
+        <img [src]="galleryImages[0]" [alt]="crop?.commodity" class="crop-modal-thumb" (error)="onCropImageError($event)" />
+        <div>
+          <h4>{{ crop?.commodity }}</h4>
+          <p class="text-muted">Farmer: {{ crop?.farmerName || 'Ramesh Kumar' }} | {{ crop?.district }}</p>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Selected Quantity (Quintal)</label>
+        <input type="number" [(ngModel)]="selectedQty" class="form-control" [max]="crop?.quantity || 1000" min="10" />
+      </div>
+
+      <div class="form-group">
+        <label>Delivery Warehouse / Destination Address *</label>
+        <textarea [(ngModel)]="deliveryAddress" class="form-control" rows="3" placeholder="Enter complete delivery address..."></textarea>
+      </div>
+
+      <div class="order-calc-card">
+        <div class="calc-row">
+          <span>Unit Rate:</span>
+          <strong>₹{{ pricePerQuintal | number:'1.0-0' }} / Quintal</strong>
+        </div>
+        <div class="calc-row">
+          <span>Volume:</span>
+          <strong>{{ selectedQty }} Quintal</strong>
+        </div>
+        <div class="divider"></div>
+        <div class="calc-row total-row">
+          <span>Total Order Value:</span>
+          <strong class="text-green">₹{{ estimatedTotal | number:'1.0-0' }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="isOrderModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" (click)="submitOrder()">
+        <i class="fa-solid fa-lock"></i> Place Escrow Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Negotiate -->
+<div class="modal-backdrop" *ngIf="isNegotiateModalOpen" (click)="isNegotiateModalOpen = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-comments-dollar text-green"></i> Negotiate Price with Farmer</h3>
+      <button class="close-btn" (click)="isNegotiateModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted">Propose your counter-price directly to {{ crop?.farmerName || 'Ramesh Kumar' }}. They can accept or counter back.</p>
+
+      <div class="form-group">
+        <label>Current Asking Price (₹ / KG)</label>
+        <div class="stat-highlight">₹{{ crop?.pricePerKg | number:'1.2-2' }}</div>
+      </div>
+
+      <div class="form-group">
+        <label>Your Counter Price (₹ / KG) *</label>
+        <input type="number" [(ngModel)]="negTargetPrice" class="form-control" step="0.5" />
+      </div>
+
+      <div class="form-group">
+        <label>Volume (Quintal)</label>
+        <input type="number" [(ngModel)]="selectedQty" class="form-control" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="isNegotiateModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" (click)="submitNegotiation()">
+        <i class="fa-solid fa-paper-plane"></i> Send Negotiation
+      </button>
+    </div>
+  </div>
+</div>

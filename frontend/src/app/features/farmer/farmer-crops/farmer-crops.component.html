@@ -1,0 +1,165 @@
+<div class="crops-page-wrapper">
+  <!-- Top Banner matching Screen 14 -->
+  <div class="crops-hero-banner">
+    <div class="banner-content">
+      <h1>My Crops</h1>
+      <p>Manage your crops, update details and get better deals.</p>
+    </div>
+    <button class="btn btn-add-crop" (click)="openAddModal()">
+      <i class="fa-solid fa-plus"></i> Add Crop
+    </button>
+  </div>
+
+  <!-- Crops Table Card matching Screen 14 -->
+  <div class="crops-table-card">
+    <div class="table-responsive">
+      <table class="crops-table">
+        <thead>
+          <tr>
+            <th>Crop Details</th>
+            <th>Grade</th>
+            <th>Quantity (KG)</th>
+            <th>Expected Price<br><small>(₹ per KG)</small></th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let crop of crops">
+            <td class="crop-details-cell">
+              <img [src]="crop.image" [alt]="crop.name" class="crop-thumb" (error)="onCropImageError($event)" />
+              <strong class="crop-name">{{ crop.name }}</strong>
+            </td>
+            <td>{{ crop.grade }}</td>
+            <td>{{ crop.quantity }} kg</td>
+            <td class="price-cell">₹{{ crop.expectedPrice }}</td>
+            <td>
+              <span class="status-pill" [class.active]="crop.status === 'Active'" [class.sold]="crop.status === 'Sold'">
+                ● {{ crop.status }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-row">
+                <button class="btn-edit" (click)="openEdit(crop)">
+                  <i class="fa-solid fa-pencil"></i> Edit
+                </button>
+                <button class="btn-delete" (click)="deleteCrop(crop.id)" title="Delete Crop">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Summary -->
+    <div class="crops-pagination">
+      <span>Showing 1 to {{ crops.length }} of {{ crops.length }} crops</span>
+      <div class="pag-btns">
+        <button class="pag-btn">&lt;</button>
+        <button class="pag-btn active">1</button>
+        <button class="pag-btn">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Crop -->
+<div class="modal-backdrop" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-plus text-green"></i> Add New Crop Listing</h3>
+      <button class="close-x" (click)="closeAddModal()">&times;</button>
+    </div>
+    <form (ngSubmit)="submitAddCrop()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Crop / Commodity Name *</label>
+          <input type="text" [(ngModel)]="newCropForm.name" name="cName" class="form-control" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Grade</label>
+            <select [(ngModel)]="newCropForm.grade" name="cGrade" class="form-control">
+              <option value="A Grade">A Grade</option>
+              <option value="B Grade">B Grade</option>
+              <option value="FAQ">FAQ</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label>Quantity (KG) *</label>
+            <input type="number" [(ngModel)]="newCropForm.quantity" name="cQty" class="form-control" min="1" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>State *</label>
+            <input type="text" [(ngModel)]="newCropForm.state" name="cState" class="form-control" placeholder="e.g. Punjab" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>District / Mandi *</label>
+            <input type="text" [(ngModel)]="newCropForm.district" name="cDistrict" class="form-control" placeholder="e.g. Ludhiana" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Expected Price (₹ / KG) *</label>
+          <input type="number" [(ngModel)]="newCropForm.expectedPrice" name="cPrice" class="form-control" min="1" required />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeAddModal()">Cancel</button>
+        <button type="submit" class="btn btn-save">Add Crop</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Crop -->
+<div class="modal-backdrop" *ngIf="isEditModalOpen && editingCrop" (click)="closeEditModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-pencil text-green"></i> Edit Crop Listing</h3>
+      <button class="close-x" (click)="closeEditModal()">&times;</button>
+    </div>
+    <form (ngSubmit)="submitEditCrop()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Crop / Commodity Name</label>
+          <input type="text" [(ngModel)]="editingCrop.name" name="eName" class="form-control" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Grade</label>
+            <select [(ngModel)]="editingCrop.grade" name="eGrade" class="form-control">
+              <option value="A Grade">A Grade</option>
+              <option value="B Grade">B Grade</option>
+              <option value="FAQ">FAQ</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label>Quantity (KG)</label>
+            <input type="number" [(ngModel)]="editingCrop.quantity" name="eQty" class="form-control" min="1" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Expected Price (₹ / KG)</label>
+            <input type="number" [(ngModel)]="editingCrop.expectedPrice" name="ePrice" class="form-control" min="1" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>Status</label>
+            <select [(ngModel)]="editingCrop.status" name="eStatus" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Sold">Sold</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn btn-save">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>

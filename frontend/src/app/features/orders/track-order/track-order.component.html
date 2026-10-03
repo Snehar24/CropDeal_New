@@ -1,0 +1,120 @@
+﻿<div class="track-order-container">
+
+  <!-- Page Header -->
+  <section class="track-hero">
+    <div class="hero-icon"><i class="fa-solid fa-magnifying-glass-location"></i></div>
+    <div>
+      <h2>Track Your Order</h2>
+      <p>Enter your Order ID to get real-time delivery status and updates.</p>
+    </div>
+  </section>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-box">
+      <i class="fa-solid fa-hashtag search-icon"></i>
+      <input
+        type="number"
+        [(ngModel)]="searchOrderId"
+        placeholder="Enter Order ID (e.g. 1023)"
+        class="search-input"
+        (keyup.enter)="trackOrder()"
+        min="1"
+      />
+      <button class="btn-track" (click)="trackOrder()" [disabled]="isLoading">
+        <i class="fa-solid fa-location-dot"></i>
+        {{ isLoading ? 'Tracking...' : 'Track Order' }}
+      </button>
+    </div>
+    <p *ngIf="errorMsg" class="error-msg">
+      <i class="fa-solid fa-circle-exclamation"></i> {{ errorMsg }}
+    </p>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading" class="loader-wrap">
+    <div class="spinner"></div>
+    <p>Fetching order details...</p>
+  </div>
+
+  <!-- Track Result -->
+  <div *ngIf="order && !isLoading" class="track-result">
+
+    <!-- Order Summary Card -->
+    <div class="order-summary-card">
+      <div class="summary-header">
+        <div class="summary-title">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Order #{{ order.id }}</span>
+        </div>
+        <span class="status-badge {{ getStatusClass(delivery?.status || order.status) }}">
+          {{ delivery?.status || order.status }}
+        </span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label"><i class="fa-solid fa-wheat-awn"></i> Crop</span>
+          <span class="value">{{ order.cropName || 'N/A' }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label"><i class="fa-solid fa-weight-hanging"></i> Quantity</span>
+          <span class="value">{{ order.quantity | number }} KG</span>
+        </div>
+        <div class="summary-item">
+          <span class="label"><i class="fa-solid fa-indian-rupee-sign"></i> Total Amount</span>
+          <span class="value">₹{{ order.totalAmount | number:'1.0-0' }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label"><i class="fa-solid fa-calendar-day"></i> Order Date</span>
+          <span class="value">{{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}</span>
+        </div>
+        <div class="summary-item" *ngIf="order.deliveryAddress">
+          <span class="label"><i class="fa-solid fa-location-dot"></i> Delivery Address</span>
+          <span class="value">{{ order.deliveryAddress }}</span>
+        </div>
+        <div class="summary-item" *ngIf="delivery?.deliveryReference">
+          <span class="label"><i class="fa-solid fa-barcode"></i> Delivery Ref</span>
+          <span class="value">{{ delivery?.deliveryReference }}</span>
+        </div>
+        <div class="summary-item" *ngIf="delivery?.acceptedBy">
+          <span class="label"><i class="fa-solid fa-person-biking"></i> Delivery Partner</span>
+          <span class="value">{{ delivery?.acceptedBy }}</span>
+        </div>
+        <div class="summary-item" *ngIf="delivery?.deliveryCharge">
+          <span class="label"><i class="fa-solid fa-truck"></i> Delivery Charge</span>
+          <span class="value">₹{{ delivery?.deliveryCharge | number:'1.0-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Stepper -->
+    <div class="stepper-card">
+      <h3 class="stepper-title"><i class="fa-solid fa-timeline"></i> Delivery Timeline</h3>
+      <div class="stepper">
+        <div
+          *ngFor="let step of trackSteps; let i = index; let last = last"
+          class="step"
+          [class.done]="step.done"
+          [class.active]="step.active"
+        >
+          <div class="step-connector" *ngIf="!last" [class.filled]="step.done"></div>
+          <div class="step-circle">
+            <i [class]="step.icon"></i>
+          </div>
+          <div class="step-info">
+            <span class="step-label">{{ step.label }}</span>
+            <span *ngIf="step.time" class="step-time">{{ step.time }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Delivery Info -->
+    <div *ngIf="!delivery" class="info-banner">
+      <i class="fa-solid fa-circle-info"></i>
+      Delivery assignment is pending. Your order has been confirmed and will be picked up shortly.
+    </div>
+
+  </div>
+
+</div>

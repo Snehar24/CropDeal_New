@@ -1,0 +1,253 @@
+<div class="bid-details-page">
+  <div class="container main-content-box">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+      <a routerLink="/bidding" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back
+      </a>
+      <span class="sep">/</span>
+      <a routerLink="/bidding">Live Bidding</a>
+      <span class="sep">/</span>
+      <span class="current">{{ cropName }}</span>
+    </div>
+
+    <!-- 2 Column Layout (Left: Main info & form, Right: Farmer, Details & Bids) -->
+    <div class="details-grid-layout">
+      <!-- LEFT COLUMN -->
+      <div class="left-main-col">
+        <!-- Top Crop Details Card -->
+        <div class="card crop-main-card">
+          <div class="card-inner-flex">
+            <!-- Gallery -->
+            <div class="gallery-section">
+              <div class="main-image-box">
+                <img [src]="galleryImages[selectedImageIndex]" [alt]="cropName" (error)="onCropImageError($event)" />
+              </div>
+              <div class="thumbnail-strip">
+                <div *ngFor="let img of galleryImages; let i = index"
+                     class="thumb-box"
+                     [class.active]="i === selectedImageIndex"
+                     (click)="selectedImageIndex = i">
+                  <img [src]="img" [alt]="'thumb-' + i" (error)="onCropImageError($event)" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Basic Info & Metrics -->
+            <div class="info-section">
+              <div class="title-row">
+                <h1 class="crop-heading">{{ cropName }}</h1>
+                <div class="badges-row">
+                  <span class="badge-status live"><span class="dot"></span> Live Bidding</span>
+                </div>
+              </div>
+
+              <div class="variety-grade-row">
+                <span>Variety: <strong>{{ variety }}</strong></span>
+                <span class="pipe">|</span>
+                <span>Grade: <strong>{{ grade }}</strong></span>
+              </div>
+
+              <div class="location-row">
+                <i class="fa-solid fa-location-dot text-muted"></i> {{ location }}
+              </div>
+
+              <!-- Metrics Mint Box -->
+              <div class="metrics-mint-box">
+                <div class="metric-item">
+                  <span class="metric-label">Current Highest Bid</span>
+                  <span class="metric-value green">₹{{ currentHighestBid | number:'1.2-2' }} <small>/ Kg</small></span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Total Quantity</span>
+                  <span class="metric-value">{{ totalQuantity | number }} Kg</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Time Remaining</span>
+                  <span class="metric-value red"><i class="fa-regular fa-clock"></i> {{ timeRemaining }}</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="description-section">
+                <h4>Description</h4>
+                <p>{{ description }}</p>
+
+                <div class="pills-list">
+                  <span class="feature-tag"><i class="fa-solid fa-check text-green"></i> Fresh Produce</span>
+                  <span class="feature-tag"><i class="fa-solid fa-check text-green"></i> Good Quality</span>
+                  <span class="feature-tag"><i class="fa-solid fa-check text-green"></i> Direct from Farmer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Place Your Bid Card -->
+        <div class="card place-bid-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-gavel text-green"></i> Place Your Bid</h3>
+            <div class="notice-chip">
+              <i class="fa-solid fa-circle-info text-green"></i> Enter your bid price in ₹ per kilogram (₹/Kg)
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="bid-input-grid">
+              <div class="input-col">
+                <label>Your Bid Price (₹ / Kg) <span class="required">*</span></label>
+                <div class="input-stepper">
+                  <input type="number" [(ngModel)]="yourBidPrice" step="0.5" [min]="currentHighestBid + 0.1" class="form-control" />
+                </div>
+              </div>
+
+              <div class="calc-col">
+                <div class="calc-box">
+                  <span class="calc-label">Total Amount (Estimated)</span>
+                  <span class="calc-amount">₹{{ totalEstimatedAmount | number }}</span>
+                  <span class="calc-calc">({{ totalQuantity | number }} Kg × ₹{{ yourBidPrice | number:'1.2-2' }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quantity-locked-row">
+              <label>Quantity</label>
+              <div class="locked-input-group">
+                <span class="note-left">Available Quantity: {{ totalQuantity | number }} Kg</span>
+                <div class="locked-field">
+                  <span>{{ totalQuantity | number }}</span>
+                  <span class="unit-badge">Kg</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bid-alert-info">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>You can bid for the full available quantity. Final quantity will be confirmed after auction ends.</span>
+            </div>
+
+            <button class="btn-submit-bid" (click)="submitBid()" [disabled]="isPlacingBid">
+              <i class="fa-solid fa-gavel"></i> {{ isPlacingBid ? 'Placing Bid...' : 'Place Bid' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR COLUMN -->
+      <div class="right-sidebar-col">
+        <!-- Farmer Details Card -->
+        <div class="card side-card">
+          <div class="side-card-header">
+            <h3>Farmer Details</h3>
+          </div>
+          <div class="side-card-body">
+            <div class="farmer-profile-row">
+              <div class="farmer-avatar-lg">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div class="farmer-meta">
+                <span class="farmer-title">Ramesh Kumar</span>
+                <span class="farmer-sub">Farmer</span>
+              </div>
+              <span class="badge-verified"><i class="fa-solid fa-check"></i> Verified Farmer</span>
+            </div>
+
+            <div class="side-details-list">
+              <div class="side-detail-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>Coimbatore, Tamil Nadu</span>
+              </div>
+              <div class="side-detail-item">
+                <i class="fa-solid fa-phone"></i>
+                <span>+91 98765 43210</span>
+              </div>
+              <div class="side-detail-item">
+                <i class="fa-solid fa-star text-gold"></i>
+                <span><strong>4.8</strong> (36 reviews)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auction Details Card -->
+        <div class="card side-card">
+          <div class="side-card-header">
+            <h3>Auction Details</h3>
+          </div>
+          <div class="side-card-body p-0">
+            <div class="auction-props-table">
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-gavel"></i> Auction Type</span>
+                <span class="prop-val">Live Bidding</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-regular fa-calendar"></i> Start Time</span>
+                <span class="prop-val">29 Sep 2026, 10:00 AM</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-regular fa-clock"></i> End Time</span>
+                <span class="prop-val">29 Sep 2026, 01:00 PM</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-box-archive"></i> Total Quantity</span>
+                <span class="prop-val">{{ totalQuantity | number }} Kg</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-leaf"></i> Commodity</span>
+                <span class="prop-val">{{ cropName }}</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-tag"></i> Variety</span>
+                <span class="prop-val">{{ variety }}</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-certificate"></i> Grade</span>
+                <span class="prop-val">{{ grade }}</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-shop"></i> Market</span>
+                <span class="prop-val">{{ market }}</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-building"></i> District</span>
+                <span class="prop-val">{{ district }}</span>
+              </div>
+              <div class="prop-row">
+                <span class="prop-key"><i class="fa-solid fa-earth-americas"></i> State</span>
+                <span class="prop-val">{{ state }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Bids Card -->
+        <div class="card side-card">
+          <div class="side-card-header d-flex justify-between align-center">
+            <h3>Current Bids</h3>
+            <span class="badge-counter">{{ bidsHistory.length }} Bids</span>
+          </div>
+          <div class="side-card-body p-0">
+            <table class="bids-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Bidder Name</th>
+                  <th>Bid Price (₹/Kg)</th>
+                  <th>Bid Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let b of bidsHistory" [class.highlight-row]="b.isHighest">
+                  <td class="rank-col">{{ b.rank }}</td>
+                  <td class="name-col">{{ b.bidderName }}</td>
+                  <td class="price-col" [class.highest]="b.isHighest">₹{{ b.bidPrice | number:'1.2-2' }}</td>
+                  <td class="time-col">{{ b.bidTime }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

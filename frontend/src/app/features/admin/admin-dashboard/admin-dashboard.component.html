@@ -1,0 +1,60 @@
+<div class="admin-dashboard-container">
+
+  <!-- Executive Hero Banner -->
+  <section class="dashboard-hero">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <i class="fa-solid fa-shield-halved"></i> Platform Operations Command Center
+      </div>
+      <h2>CropDeal Administrative Dashboard</h2>
+      <p>High-level platform oversight, real-time market liquidity, APMC transaction volume, and operational governance.</p>
+    </div>
+  </section>
+
+  <!-- Metric Stat Cards (4 Boxes) -->
+  <div class="grid-4 mb-3">
+    <a routerLink="/admin/users" class="stat-card green" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-green">
+        <i class="fa-solid fa-tractor"></i>
+      </div>
+      <div class="stat-value">{{ stats.totalFarmers | number }}</div>
+      <div class="stat-label">Registered Farmers</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-seedling"></i> Verified Agricultural Producers
+      </div>
+    </a>
+
+    <a routerLink="/admin/users" class="stat-card navy" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-navy">
+        <i class="fa-solid fa-building-wheat"></i>
+      </div>
+      <div class="stat-value">{{ stats.totalDealers | number }}</div>
+      <div class="stat-label">Verified Dealers</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-store"></i> Active Commercial Buyers
+      </div>
+    </a>
+
+    <a routerLink="/admin/reports" class="stat-card gold" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-gold">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+      </div>
+      <div class="stat-value">₹{{ (stats.totalRevenue || 0) | number:'1.2-2' }}</div>
+      <div class="stat-label">Platform GMV Volume</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-receipt"></i> Across {{ stats.totalTransactions || 0 }} Transactions
+      </div>
+    </a>
+
+    <a routerLink="/orders" class="stat-card teal" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-teal">
+        <i class="fa-solid fa-boxes-packing"></i>
+      </div>
+      <div class="stat-value">{{ stats.totalOrders | number }}</div>
+      <div class="stat-label">Total Platform Orders</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-truck-fast"></i> Fully Escrow Protected
+      </div>
+    </a>
+  </div>
+</div>

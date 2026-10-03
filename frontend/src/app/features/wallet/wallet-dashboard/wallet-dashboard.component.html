@@ -1,0 +1,163 @@
+<div class="wallet-page-wrapper">
+  <!-- Banner matching Screen 17 -->
+  <div class="wallet-hero-banner">
+    <div class="banner-content">
+      <h1>Wallet</h1>
+      <p>Manage your wallet, top up funds and view transaction history.</p>
+    </div>
+  </div>
+
+  <!-- Top 2-Column Row matching Screen 17 -->
+  <div class="wallet-top-grid">
+    <!-- Available Balance Card -->
+    <div class="card balance-card">
+      <div class="balance-main-row">
+        <div class="wallet-icon-circle">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="balance-meta">
+          <span class="lbl">Available Balance</span>
+          <div class="amount-wrap">
+            <span class="currency">₹</span>
+            <span class="val">{{ balance | number }}</span>
+            <button class="btn-refresh" (click)="refresh()" title="Refresh Balance">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="balance-sub-stats">
+        <div class="sub-stat-item">
+          <span class="sub-lbl">Total Added</span>
+          <span class="sub-val green">₹ {{ totalAdded | number }}</span>
+        </div>
+        <div class="sub-stat-item">
+          <span class="sub-lbl">Total Used / Spent</span>
+          <span class="sub-val red">₹ {{ totalUsed | number }}</span>
+        </div>
+        <div class="sub-stat-item">
+          <span class="sub-lbl">Available Balance</span>
+          <span class="sub-val dark">₹ {{ balance | number }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Up & Spend Money Card with Dual Mode Tabs -->
+    <div class="card add-money-card">
+      <div class="wallet-action-tabs">
+        <button class="action-tab-btn" [class.active]="actionTab === 'topup'" (click)="actionTab = 'topup'">
+          <i class="fa-solid fa-circle-plus text-green"></i> Top Up / Add Money
+        </button>
+        <button class="action-tab-btn" [class.active]="actionTab === 'spend'" (click)="actionTab = 'spend'">
+          <i class="fa-solid fa-circle-minus text-red"></i> Spend / Withdraw
+        </button>
+      </div>
+
+      <!-- MODE 1: Top Up (Add Money) -->
+      <div *ngIf="actionTab === 'topup'" class="card-body-clean">
+        <label class="input-lbl">Enter amount to add (₹)</label>
+        <div class="amount-input-box">
+          <span class="rupee-symbol">₹</span>
+          <input type="number" [(ngModel)]="addAmount" placeholder="Enter amount (e.g. 5000)" />
+        </div>
+
+        <div class="quick-chips-row">
+          <button class="chip-btn" (click)="addAmount = 1000">₹1,000</button>
+          <button class="chip-btn" (click)="addAmount = 5000">₹5,000</button>
+          <button class="chip-btn" (click)="addAmount = 10000">₹10,000</button>
+          <button class="chip-btn" (click)="addAmount = 25000">₹25,000</button>
+        </div>
+
+        <button class="btn-submit-money" (click)="submitAddMoney()">
+          <i class="fa-solid fa-credit-card"></i> Add Money to Wallet
+        </button>
+      </div>
+
+      <!-- MODE 2: Spend / Withdraw -->
+      <div *ngIf="actionTab === 'spend'" class="card-body-clean spend-mode">
+        <label class="input-lbl">Enter amount to spend / withdraw (₹)</label>
+        <div class="amount-input-box spend-box">
+          <span class="rupee-symbol">₹</span>
+          <input type="number" [(ngModel)]="spendAmount" placeholder="Enter amount (e.g. 2000)" />
+        </div>
+
+        <div class="quick-chips-row">
+          <button class="chip-btn spend-chip" (click)="spendAmount = 1000">₹1,000</button>
+          <button class="chip-btn spend-chip" (click)="spendAmount = 2500">₹2,500</button>
+          <button class="chip-btn spend-chip" (click)="spendAmount = 5000">₹5,000</button>
+          <button class="chip-btn spend-chip" (click)="spendAmount = 10000">₹10,000</button>
+        </div>
+
+        <div class="form-group-spend">
+          <label class="input-lbl">Purpose / Description</label>
+          <input type="text" [(ngModel)]="spendReason" class="spend-reason-input" placeholder="e.g. Mandi procurement / Bank withdrawal" />
+        </div>
+
+        <button class="btn-submit-spend" (click)="submitSpendMoney()">
+          <i class="fa-solid fa-arrow-down-long"></i> Spend / Withdraw from Wallet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction History Card -->
+  <div class="card tx-card">
+    <div class="tx-card-header">
+      <div class="title-with-icon">
+        <i class="fa-solid fa-list-ul"></i>
+        <h3>Transaction History ({{ filteredTransactions.length }})</h3>
+      </div>
+      <div class="tx-filters">
+        <select class="form-select-sm" [(ngModel)]="selectedTxFilter" (change)="applyTxFilter()">
+          <option value="ALL">All Transactions</option>
+          <option value="ADDED">Added Only</option>
+          <option value="USED">Used / Spent Only</option>
+        </select>
+        <button class="btn-refresh-sm" (click)="refresh()" title="Refresh">
+          <i class="fa-solid fa-rotate-right"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="tx-table-wrapper">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date & Time</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Amount (₹)</th>
+            <th>Balance (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of filteredTransactions">
+            <td class="text-muted">{{ tx.id }}</td>
+            <td class="datetime-cell">
+              <strong>{{ tx.date }}</strong>
+              <small>{{ tx.time }}</small>
+            </td>
+            <td>
+              <span class="tx-badge" [class.added]="tx.type === 'ADDED'" [class.used]="tx.type === 'USED'">
+                <i [class]="tx.type === 'ADDED' ? 'fa-solid fa-plus' : 'fa-solid fa-minus'"></i>
+                {{ tx.type === 'ADDED' ? 'Added' : 'Used' }}
+              </span>
+            </td>
+            <td class="desc-cell">{{ tx.description }}</td>
+            <td class="amount-cell" [class.green]="tx.type === 'ADDED'" [class.red]="tx.type === 'USED'">
+              {{ tx.type === 'ADDED' ? '+ ' : '- ' }}₹ {{ tx.amount | number }}
+            </td>
+            <td class="balance-cell">₹ {{ tx.balance | number }}</td>
+          </tr>
+          <tr *ngIf="filteredTransactions.length === 0">
+            <td colspan="6" class="text-center py-4 text-muted">
+              No transactions found for the selected filter.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

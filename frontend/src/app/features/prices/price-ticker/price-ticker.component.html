@@ -1,0 +1,199 @@
+<div class="mandi-page-wrapper">
+  <!-- Hero Section -->
+  <section class="mandi-hero">
+    <div class="mandi-hero-content">
+      <h1>Mandi <span class="text-green">Prices</span></h1>
+      <p class="hero-subtitle">
+        Get the latest market prices of agricultural commodities from government mandi data across India.
+      </p>
+
+      <!-- Stat Badges Row -->
+      <div class="mandi-stats-row">
+        <div class="mandi-stat-card">
+          <div class="stat-icon-wrapper">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </div>
+          <div class="stat-text">
+            <span class="stat-number">500+</span>
+            <span class="stat-label">Markets Covered</span>
+          </div>
+        </div>
+
+        <div class="mandi-stat-card">
+          <div class="stat-icon-wrapper">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+          <div class="stat-text">
+            <span class="stat-number">200+</span>
+            <span class="stat-label">Commodities</span>
+          </div>
+        </div>
+
+        <div class="mandi-stat-card">
+          <div class="stat-icon-wrapper">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="stat-text">
+            <span class="stat-number">28</span>
+            <span class="stat-label">States</span>
+          </div>
+        </div>
+
+        <div class="mandi-stat-card">
+          <div class="stat-icon-wrapper">
+            <i class="fa-solid fa-shop"></i>
+          </div>
+          <div class="stat-text">
+            <span class="stat-number">Latest</span>
+            <span class="stat-label">Government Data</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <div class="container main-content-area">
+    <!-- Filter Card -->
+    <div class="filter-card">
+      <div class="filter-inputs-grid">
+        <div class="filter-group">
+          <label><i class="fa-solid fa-location-dot text-green"></i> State</label>
+          <select [(ngModel)]="selectedState" class="form-select">
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fa-solid fa-building text-green"></i> District</label>
+          <select [(ngModel)]="selectedDistrict" class="form-select">
+            <option *ngFor="let d of districts" [value]="d">{{ d }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fa-solid fa-leaf text-green"></i> Commodity</label>
+          <select [(ngModel)]="selectedCommodity" class="form-select">
+            <option *ngFor="let c of commodities" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fa-solid fa-shop text-green"></i> Market</label>
+          <select [(ngModel)]="selectedMarket" class="form-select">
+            <option *ngFor="let m of markets" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-actions-row">
+        <div class="last-updated-text">
+          <i class="fa-regular fa-calendar-days text-muted"></i> Last updated: {{ lastUpdated }}
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-search" (click)="onSearch()">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+          <button class="btn btn-sync" (click)="syncGovernmentPrices()" [disabled]="isSyncing">
+            <i class="fa-solid fa-rotate" [class.fa-spin]="isSyncing"></i> Sync Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mandi Table Card -->
+    <div class="mandi-table-card">
+      <div class="table-responsive">
+        <table class="mandi-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Commodity <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Variety <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Grade <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Market <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>District <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Min Price (₹/Kg) <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Max Price (₹/Kg) <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Modal Price (₹/Kg) <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Arrival Date <i class="fa-solid fa-sort sort-icon"></i></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of pagedPrices; let i = index">
+              <td class="text-muted">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td class="commodity-cell">
+                <img [src]="item.image || 'assets/images/crop-rice.jpg'" [alt]="item.commodity" class="crop-thumb" (error)="onCropImageError($event)" />
+                <span class="commodity-name">{{ item.commodity }}</span>
+              </td>
+              <td>{{ item.variety || 'Local' }}</td>
+              <td>{{ item.grade || 'FAQ' }}</td>
+              <td>{{ item.market || item.district }}</td>
+              <td>{{ item.district }}</td>
+              <td class="price-val">₹{{ item.minPricePerKg | number:'1.2-2' }}</td>
+              <td>₹{{ item.maxPricePerKg | number:'1.2-2' }}</td>
+              <td class="price-val bold">₹{{ item.modalPricePerKg | number:'1.2-2' }}</td>
+              <td class="arrival-cell">
+                <span class="arrival-pill">
+                  <i class="fa-regular fa-calendar text-green"></i>
+                  <strong>{{ item.arrivalDate | slice:0:10 }}</strong>
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="pagedPrices.length === 0">
+              <td colspan="10" class="text-center py-4 text-muted">
+                No mandi records found matching your filters.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mandi-pagination-bar">
+        <span class="results-count">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (currentPage * pageSize > totalFiltered) ? totalFiltered : currentPage * pageSize }} of {{ totalFiltered }} results
+        </span>
+
+        <div class="pagination-buttons">
+          <button class="pag-btn" [disabled]="currentPage === 1" (click)="prevPage()">&lt;</button>
+          <button *ngFor="let p of pageNumbers" class="pag-btn" [class.active]="p === currentPage" (click)="goToPage(p)">
+            {{ p }}
+          </button>
+          <span class="pag-dots" *ngIf="totalPages > 5">...</span>
+          <button *ngIf="totalPages > 5" class="pag-btn" [class.active]="currentPage === totalPages" (click)="goToPage(totalPages)">
+            {{ totalPages }}
+          </button>
+          <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">&gt;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notice Banner -->
+    <div class="mandi-disclaimer-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>All prices are converted and displayed in <strong>₹ per kilogram (₹/Kg)</strong> for easy comparison. Prices are sourced from government mandi data and may vary by market, quality and date.</span>
+    </div>
+  </div>
+
+  <!-- Standard Dark Green Footer -->
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <i class="fa-solid fa-seedling brand-icon"></i>
+        <span class="brand-text">CropDeal</span>
+      </div>
+      <div class="footer-links">
+        <span>Empowering Farmers</span>
+        <span class="divider">|</span>
+        <span>Fair Prices</span>
+        <span class="divider">|</span>
+        <span>Better Opportunities</span>
+      </div>
+      <div class="footer-copy">
+        &copy; 2026 CropDeal. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</div>

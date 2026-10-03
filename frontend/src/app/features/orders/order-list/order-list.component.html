@@ -1,0 +1,541 @@
+<div class="orders-page-wrapper">
+  <!-- Banner matching Screen 15 with Order Placement Action -->
+  <div class="orders-hero-banner">
+    <div class="banner-content">
+      <div class="banner-title-row">
+        <div>
+          <h1>Orders &amp; Procurement Center</h1>
+          <p>Track commercial orders, review lifecycle history, manage produce deliveries and settle payments.</p>
+        </div>
+        <div class="banner-actions" *ngIf="isDealer">
+          <button class="btn btn-gold btn-order-new" (click)="openCreateOrderModal()">
+            <i class="fa-solid fa-cart-plus"></i> Place New Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order History Metrics Bar -->
+  <div class="orders-metrics-grid">
+    <div class="metric-card" (click)="statusFilter = 'ALL'; applyFilter()" [class.active]="statusFilter === 'ALL'">
+      <div class="metric-icon bg-light-green"><i class="fa-solid fa-receipt text-green"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ totalOrdersCount }}</span>
+        <span class="metric-lbl">Total Orders</span>
+      </div>
+    </div>
+    <div class="metric-card" (click)="statusFilter = 'CONFIRMED'; applyFilter()" [class.active]="statusFilter === 'CONFIRMED'">
+      <div class="metric-icon bg-light-teal"><i class="fa-solid fa-circle-check text-teal"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ completedCount }}</span>
+        <span class="metric-lbl">Confirmed / Delivered</span>
+      </div>
+    </div>
+    <div class="metric-card" (click)="statusFilter = 'PENDING'; applyFilter()" [class.active]="statusFilter === 'PENDING'">
+      <div class="metric-icon bg-light-gold"><i class="fa-solid fa-clock text-gold"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ pendingCount }}</span>
+        <span class="metric-lbl">Pending Payment</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon bg-light-navy"><i class="fa-solid fa-wallet text-navy"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">₹{{ totalSpend | number }}</span>
+        <span class="metric-lbl">Procurement Volume</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & History Bar -->
+  <div class="orders-filter-card">
+    <div class="filter-row">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search by crop, farmer name, order ID..." />
+        <button *ngIf="searchTerm" class="btn-clear" (click)="searchTerm = ''; applyFilter()">&times;</button>
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Statuses (History)</option>
+          <option value="CONFIRMED">Confirmed &amp; Delivered</option>
+          <option value="PENDING">Pending / Unpaid</option>
+          <option value="CANCELLED">Cancelled / Refunded</option>
+        </select>
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="cropFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Commodities</option>
+          <option value="Paddy (Rice)">Paddy (Rice)</option>
+          <option value="Wheat">Wheat</option>
+          <option value="Tomato">Tomato</option>
+          <option value="Onion">Onion</option>
+          <option value="Green Chilli">Green Chilli</option>
+          <option value="Cotton">Cotton</option>
+          <option value="Mustard">Mustard</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pickup Filter Banner (shown when sidebar 'Available Pickup' filter is active) -->
+  <div class="pickup-filter-banner" *ngIf="deliveryModeFilter === 'SELF_PICKUP' && isDealer">
+    <i class="fa-solid fa-truck-ramp-box"></i>
+    <span>Showing <strong>Self Pickup</strong> orders — collect directly from the farmer's location.</span>
+    <button class="btn-clear-mode" (click)="deliveryModeFilter = 'ALL'; applyFilter()">
+      <i class="fa-solid fa-xmark"></i> Show All
+    </button>
+  </div>
+
+  <!-- Orders Table Card -->
+  <div class="orders-table-card">
+    <div class="table-responsive">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Crop Details</th>
+            <th>{{ isDealer ? 'Farmer / Supplier' : 'Dealer / Buyer' }}</th>
+            <th>Delivery Mode</th>
+            <th>Delivery Person</th>
+            <th>Receipt / Counter</th>
+            <th>Quantity</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Date &amp; Time</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of pagedOrders; let i = index">
+            <td>
+              <strong class="order-id-tag">#ORD-{{ order.id }}</strong>
+            </td>
+            <td class="crop-col">
+              <img [src]="order.image" [alt]="order.cropName" class="crop-thumb" (error)="onCropImageError($event)" />
+              <div class="crop-meta">
+                <strong class="crop-name">{{ order.cropName }}</strong>
+                <span class="crop-grade-pill">{{ order.grade || 'Grade A' }}</span>
+              </div>
+            </td>
+            <td class="farmer-col">
+              <div class="farmer-meta">
+                <strong>{{ isDealer ? (order.farmerName || 'Registered Farmer') : (order.dealerName || 'Dealer #' + order.dealerId) }}</strong>
+                <span class="farmer-loc"><i class="fa-solid fa-location-dot"></i> {{ order.deliveryAddress || order.farmerLocation || 'APMC Gate' }}</span>
+              </div>
+            </td>
+            <!-- Delivery Mode Cell -->
+            <td class="delivery-mode-col">
+              <span *ngIf="order.deliveryOption === 'SELF_PICKUP'" class="delivery-mode-badge pickup">
+                <i class="fa-solid fa-person-walking-luggage"></i> Self Pickup
+              </span>
+              <span *ngIf="order.deliveryOption !== 'SELF_PICKUP'" class="delivery-mode-badge partner">
+                <i class="fa-solid fa-truck"></i> Delivery Partner
+              </span>
+            </td>
+            <td class="delivery-col">
+              <div class="agent-meta">
+                <span class="agent-name" style="font-size: 0.82rem; font-weight: 600; color: #1E293B;">
+                  <i class="fa-solid fa-truck" style="color: #16A34A; margin-right: 4px;"></i>
+                  {{ order.deliveryPersonName || 'Kisan Logistics' }}
+                </span>
+              </div>
+            </td>
+            <td class="receipt-col">
+              <span class="receipt-tag" style="display: inline-flex; align-items: center; gap: 4px; background: #F1F5F9; border: 1px solid #CBD5E1; padding: 2px 7px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; color: #0F3D20;" title="Dealer Counter / Receipt">
+                <i class="fa-solid fa-receipt text-green"></i> {{ order.receiptId || ('RCP-' + order.id) }}
+              </span>
+            </td>
+            <td>
+              <strong class="qty-text">{{ order.quantity | number }} KG</strong>
+            </td>
+            <td class="amount-col">
+              <strong class="total-amt">₹{{ order.totalAmount | number }}</strong>
+              <small class="rate-per-kg">(₹{{ order.pricePerKg }}/KG)</small>
+            </td>
+            <td>
+              <span class="status-badge"
+                [class.status-confirmed]="order.status === 'CONFIRMED' || order.status === 'DELIVERED'"
+                [class.status-pending]="order.status === 'PENDING'"
+                [class.status-cancelled]="order.status === 'CANCELLED'">
+                {{ order.status }}
+              </span>
+            </td>
+            <td>
+              <span class="pay-badge"
+                [class.pay-paid]="order.paymentStatus === 'PAID'"
+                [class.pay-unpaid]="order.paymentStatus !== 'PAID' && order.paymentStatus !== 'REFUNDED'"
+                [class.pay-refunded]="order.paymentStatus === 'REFUNDED'">
+                <i class="fa-solid" [class.fa-circle-check]="order.paymentStatus === 'PAID'" [class.fa-circle-exclamation]="order.paymentStatus !== 'PAID'"></i>
+                {{ order.paymentStatus || 'UNPAID' }}
+              </span>
+            </td>
+            <td class="date-col">
+              <div class="date-wrap">
+                <i class="fa-regular fa-calendar text-muted"></i>
+                <div class="date-text">
+                  <span>{{ order.orderDate }}</span>
+                  <small>{{ order.orderTime }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons-group">
+                <!-- Only Dealers pay for crops; Farmers never see Pay option -->
+                <button
+                  *ngIf="isDealer && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED'"
+                  class="btn-action-primary pay"
+                  (click)="payOrder(order)"
+                  title="Complete Escrow Payment">
+                  <i class="fa-solid fa-credit-card"></i> Pay
+                </button>
+
+                <!-- Download Receipt: STRICT PAYMENT CHECK -->
+                <button
+                  *ngIf="order.paymentStatus === 'PAID'"
+                  class="btn-download-receipt"
+                  (click)="downloadReceipt(order)"
+                  title="Download Official Tax Receipt">
+                  <i class="fa-solid fa-file-pdf"></i> Receipt
+                </button>
+
+                <!-- Locked indicator if unpaid -->
+                <span
+                  *ngIf="order.paymentStatus !== 'PAID'"
+                  class="locked-receipt-pill"
+                  title="Receipt locked. Pay to download invoice.">
+                  <i class="fa-solid fa-lock"></i> Locked
+                </span>
+
+                <!-- Edit Order Button (If not yet delivered or cancelled) -->
+                <button
+                  *ngIf="order.status !== 'DELIVERED' && order.status !== 'CANCELLED'"
+                  class="btn-action-icon edit"
+                  (click)="openEditOrderModal(order)"
+                  title="Edit Order Quantity / Address">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+
+                <!-- Delete / Cancel Order Button -->
+                <button
+                  *ngIf="order.status !== 'DELIVERED'"
+                  class="btn-action-icon delete"
+                  (click)="confirmDeleteOrder(order)"
+                  title="Cancel / Delete Order">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="pagedOrders.length === 0">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-receipt fa-2x mb-2 d-block text-muted"></i>
+              No orders found matching the criteria.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="orders-pagination">
+      <span>Showing 1 to {{ pagedOrders.length }} of {{ filteredOrders.length }} orders</span>
+      <div class="pag-btns">
+        <button class="pag-btn">&lt;</button>
+        <button class="pag-btn active">1</button>
+        <button class="pag-btn">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 1: Place New Order (Specification of Farmer & Crop Details)     -->
+<!-- ===================================================================== -->
+<div class="modal-backdrop" *ngIf="isCreateOrderModalOpen" (click)="isCreateOrderModalOpen = false">
+  <div class="order-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <i class="fa-solid fa-cart-plus text-green fa-lg"></i>
+        <div>
+          <h3>Place Commercial Crop Order</h3>
+          <small class="text-muted">Procure certified harvest directly from registered farmers</small>
+        </div>
+      </div>
+      <button class="close-btn" (click)="isCreateOrderModalOpen = false">&times;</button>
+    </div>
+
+    <form (ngSubmit)="submitCreateOrder()">
+      <div class="modal-body">
+        <!-- 1. Select Available Crop -->
+        <div class="form-group mb-3">
+          <label class="form-label"><strong>1. Select Available Crop Commodity *</strong></label>
+          <div class="crop-select-chips-grid">
+            <div
+              *ngFor="let crop of availableCrops"
+              class="crop-select-chip"
+              [class.selected]="selectedCropForOrder?.id === crop.id"
+              (click)="onSelectCrop(crop)">
+              <img [src]="getCropImage(crop.commodity)" [alt]="crop.commodity" class="chip-crop-thumb" (error)="onCropImageError($event)">
+              <div class="chip-info">
+                <strong>{{ crop.commodity }}</strong>
+                <small>Grade {{ crop.grade }} &bull; ₹{{ crop.pricePerKg }}/kg</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Detailed Crop & Farmer Specification Card -->
+        <div class="specified-details-card mb-3" *ngIf="selectedCropForOrder">
+          <div class="details-card-header">
+            <span class="badge badge-green"><i class="fa-solid fa-certificate"></i> APMC Certified Produce</span>
+            <span class="badge badge-gold">Grade {{ selectedCropForOrder.grade }}</span>
+          </div>
+
+          <div class="details-card-body">
+            <div class="details-crop-showcase">
+              <img [src]="getCropImage(selectedCropForOrder.commodity)" [alt]="selectedCropForOrder.commodity" class="showcase-img" (error)="onCropImageError($event)">
+              <div class="showcase-meta">
+                <h4>{{ selectedCropForOrder.commodity }}</h4>
+                <div class="price-stock-row">
+                  <div class="price-box">
+                    <span class="lbl">Unit Price</span>
+                    <strong class="val text-green">₹{{ selectedCropForOrder.pricePerKg }}<small>/kg</small></strong>
+                  </div>
+                  <div class="stock-box">
+                    <span class="lbl">Available Lot</span>
+                    <strong class="val">{{ selectedCropForOrder.quantity | number }} {{ selectedCropForOrder.unit || 'KG' }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Farmer Specification Details -->
+            <div class="details-farmer-showcase">
+              <div class="farmer-badge-title">
+                <i class="fa-solid fa-user-check text-green"></i>
+                <strong>Farmer &amp; Origin Details:</strong>
+              </div>
+              <div class="farmer-info-grid">
+                <div class="info-item">
+                  <span class="lbl">Farmer / Producer</span>
+                  <span class="val">{{ selectedCropForOrder.farmerName || ('Farmer #' + selectedCropForOrder.farmerId) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="lbl">Farm Origin</span>
+                  <span class="val"><i class="fa-solid fa-location-dot text-danger"></i> {{ selectedCropForOrder.district }}, {{ selectedCropForOrder.state }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="lbl">Verification Status</span>
+                  <span class="val text-green font-bold"><i class="fa-solid fa-shield-halved"></i> KYC &amp; Land Verified</span>
+                </div>
+              </div>
+              <p *ngIf="selectedCropForOrder.description" class="crop-desc-quote">
+                "{{ selectedCropForOrder.description }}"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Quantity & Delivery Inputs -->
+        <div class="form-row-2 mb-3">
+          <div class="form-group">
+            <label class="form-label">Quantity to Purchase (KG) *</label>
+            <div class="input-with-suffix">
+              <input
+                type="number"
+                [(ngModel)]="newOrderQuantity"
+                name="newOrderQuantity"
+                class="form-control"
+                [max]="selectedCropForOrder?.quantity || 10000"
+                min="10"
+                step="10"
+                required>
+              <span class="suffix">KG</span>
+            </div>
+            <small class="text-muted">Max lot: {{ selectedCropForOrder?.quantity || 1000 }} KG</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Delivery Destination Warehouse / Yard *</label>
+            <input
+              type="text"
+              [(ngModel)]="newOrderDeliveryAddress"
+              name="newOrderDeliveryAddress"
+              class="form-control"
+              placeholder="e.g. Yard 12, APMC Market, Delhi"
+              required>
+          </div>
+        </div>
+
+        <!-- Delivery Mode Selection -->
+        <div class="form-group mb-3">
+          <label class="form-label"><strong>Delivery Mode *</strong></label>
+          <div class="delivery-mode-selector">
+            <label class="mode-option" [class.selected]="newOrderDeliveryMode === 'DELIVERY_PARTNER'"
+              (click)="newOrderDeliveryMode = 'DELIVERY_PARTNER'">
+              <i class="fa-solid fa-truck"></i>
+              <div class="mode-text">
+                <strong>Delivery Partner</strong>
+                <small>Assigned delivery agent will pick up &amp; deliver to your warehouse</small>
+              </div>
+              <input type="radio" name="deliveryMode" value="DELIVERY_PARTNER"
+                [(ngModel)]="newOrderDeliveryMode" hidden>
+            </label>
+            <label class="mode-option" [class.selected]="newOrderDeliveryMode === 'SELF_PICKUP'"
+              (click)="newOrderDeliveryMode = 'SELF_PICKUP'">
+              <i class="fa-solid fa-person-walking-luggage"></i>
+              <div class="mode-text">
+                <strong>Self Pickup</strong>
+                <small>You will collect the produce directly from the farmer's location</small>
+              </div>
+              <input type="radio" name="deliveryMode" value="SELF_PICKUP"
+                [(ngModel)]="newOrderDeliveryMode" hidden>
+            </label>
+          </div>
+        </div>
+
+        <!-- 4. Price & Calculation Summary -->
+        <div class="order-pricing-summary" *ngIf="selectedCropForOrder">
+          <div class="summary-line">
+            <span>Subtotal ({{ newOrderQuantity }} KG &times; ₹{{ selectedCropForOrder.pricePerKg }}):</span>
+            <strong>₹{{ (newOrderQuantity * (selectedCropForOrder.pricePerKg || 0)) | number:'1.2-2' }}</strong>
+          </div>
+          <div class="summary-line text-muted small">
+            <span>Mandi Development Fee (0% Capgemini Promo):</span>
+            <span>₹0.00</span>
+          </div>
+          <div class="summary-total-line">
+            <span>Total Payable Amount:</span>
+            <span class="total-highlight">₹{{ (newOrderQuantity * (selectedCropForOrder.pricePerKg || 0)) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-navy" (click)="isCreateOrderModalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-gold">
+          <i class="fa-solid fa-lock"></i> Confirm &amp; Place Purchase Order
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 2: Edit Order                                                   -->
+<!-- ===================================================================== -->
+<div class="modal-backdrop" *ngIf="isEditOrderModalOpen" (click)="isEditOrderModalOpen = false">
+  <div class="order-modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <i class="fa-solid fa-pen-to-square text-navy fa-lg"></i>
+        <div>
+          <h3>Edit Order #{{ editingOrder?.id }}</h3>
+          <small class="text-muted">{{ editingOrder?.cropName }} &bull; ₹{{ editingOrder?.pricePerKg }}/KG</small>
+        </div>
+      </div>
+      <button class="close-btn" (click)="isEditOrderModalOpen = false">&times;</button>
+    </div>
+
+    <form (ngSubmit)="submitEditOrder()">
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label class="form-label">Order Quantity (KG) *</label>
+          <input
+            type="number"
+            [(ngModel)]="editQuantity"
+            name="editQuantity"
+            class="form-control"
+            min="10"
+            required>
+          <small class="text-muted">Updated Total: <strong>₹{{ (editQuantity * (editingOrder?.pricePerKg || 0)) | number:'1.2-2' }}</strong></small>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label">Delivery Address *</label>
+          <textarea
+            [(ngModel)]="editDeliveryAddress"
+            name="editDeliveryAddress"
+            class="form-control"
+            rows="3"
+            required></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-navy" (click)="isEditOrderModalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-navy">
+          <i class="fa-solid fa-check"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 3: Delete / Cancel Order Confirmation                           -->
+<!-- ===================================================================== -->
+<div class="modal-backdrop" *ngIf="isDeleteModalOpen" (click)="isDeleteModalOpen = false">
+  <div class="order-modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <i class="fa-solid fa-triangle-exclamation text-danger fa-lg"></i>
+        <h3>Cancel / Delete Order</h3>
+      </div>
+      <button class="close-btn" (click)="isDeleteModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to {{ orderToDelete?.paymentStatus === 'PAID' ? 'cancel' : 'delete' }} <strong>Order #{{ orderToDelete?.id }}</strong> for <strong>{{ orderToDelete?.cropName }}</strong> (₹{{ orderToDelete?.totalAmount | number }})?</p>
+      <div *ngIf="orderToDelete?.paymentStatus === 'PAID'" class="alert alert-info">
+        <i class="fa-solid fa-wallet"></i>
+        Because this order is paid, cancelling will automatically refund <strong>₹{{ orderToDelete?.totalAmount | number }}</strong> back to your wallet.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-navy" (click)="isDeleteModalOpen = false">Keep Order</button>
+      <button type="button" class="btn btn-danger" (click)="executeDeleteOrder()">
+        <i class="fa-solid fa-trash"></i> Yes, Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODAL 4: Pay Now Modal (Escrow Wallet)                                -->
+<!-- ===================================================================== -->
+<div class="modal-backdrop" *ngIf="isPaymentModalOpen" (click)="isPaymentModalOpen = false">
+  <div class="order-modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <i class="fa-solid fa-wallet text-green fa-lg"></i>
+        <div>
+          <h3>Complete Escrow Payment</h3>
+          <small class="text-muted">Order #{{ orderToPay?.id }} &bull; {{ orderToPay?.cropName }}</small>
+        </div>
+      </div>
+      <button class="close-btn" (click)="isPaymentModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="pay-amount-box text-center p-3 mb-3">
+        <span class="text-muted d-block small uppercase font-bold">Total Payable</span>
+        <h2 class="text-navy font-bold m-0">₹{{ orderToPay?.totalAmount | number:'1.2-2' }}</h2>
+      </div>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-shield-halved"></i>
+        Funds are securely held in CropDeal APMC Escrow until delivery is verified via OTP. Payment instantly unlocks tax receipt download.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-navy" (click)="isPaymentModalOpen = false">Cancel</button>
+      <button type="button" class="btn btn-navy" (click)="confirmPayment()">
+        <i class="fa-solid fa-lock"></i> Pay via Wallet &amp; Unlock Receipt
+      </button>
+    </div>
+  </div>
+</div>
+

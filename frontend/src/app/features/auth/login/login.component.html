@@ -1,0 +1,134 @@
+<div class="login-page-centered">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-seedling"></i>
+      </div>
+      <h2>Sign in to CropDeal</h2>
+      <p class="subtitle">Access your agricultural marketplace workspace</p>
+    </div>
+
+    <!-- Quick Role Selector -->
+    <div class="role-selector-bar">
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="selectedRole === 'FARMER'"
+        (click)="selectRole('FARMER')">
+        <i class="fa-solid fa-tractor"></i> Farmer
+      </button>
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="selectedRole === 'DEALER'"
+        (click)="selectRole('DEALER')">
+        <i class="fa-solid fa-store"></i> Dealer
+      </button>
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="selectedRole === 'DELIVERY_PARTNER'"
+        (click)="selectRole('DELIVERY_PARTNER')">
+        <i class="fa-solid fa-truck"></i> Partner
+      </button>
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="selectedRole === 'ADMIN'"
+        (click)="selectRole('ADMIN')">
+        <i class="fa-solid fa-shield-halved"></i> Admin
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email Input -->
+      <div class="form-group">
+        <label>Email Address</label>
+        <div class="input-wrapper">
+          <i class="fa-regular fa-envelope input-icon"></i>
+          <input
+            type="email"
+            [(ngModel)]="credentials.email"
+            name="email"
+            class="form-control"
+            placeholder="name@example.com"
+            required />
+        </div>
+      </div>
+
+      <!-- Password Input -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Password</label>
+          <a href="javascript:void(0)" (click)="isForgotModalOpen = true" class="forgot-link">Forgot?</a>
+        </div>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="credentials.password"
+            name="password"
+            class="form-control"
+            placeholder="Enter password"
+            required />
+          <button type="button" class="eye-toggle-btn" (click)="togglePassword()">
+            <i class="fa-regular" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remember Me Checkbox -->
+      <div class="remember-row">
+        <label class="checkbox-label">
+          <input type="checkbox" checked />
+          <span>Remember this device</span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        <span *ngIf="!isLoading">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+        </span>
+        <span *ngIf="isLoading"><i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...</span>
+      </button>
+    </form>
+
+    <!-- Social Sign-In -->
+    <div class="social-divider">
+      <span>or continue with</span>
+    </div>
+
+    <button type="button" class="btn-facebook" (click)="facebookLogin()">
+      <i class="fa-brands fa-facebook-f"></i>
+      <span>Continue with Facebook</span>
+    </button>
+
+    <div class="form-footer">
+      <p>Don't have an account? <a routerLink="/auth/register" class="register-link">Create Account</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Forgot Password -->
+<div class="modal-backdrop" *ngIf="isForgotModalOpen" (click)="isForgotModalOpen = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Reset Password</h3>
+      <button class="close-btn" (click)="isForgotModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted">Enter your registered email and we'll send you instructions to reset your password.</p>
+      <div class="form-group">
+        <label>Registered Email Address</label>
+        <input type="email" [(ngModel)]="forgotEmail" class="form-control" placeholder="name@example.com" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="isForgotModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" (click)="submitForgotPassword()" [disabled]="forgotLoading">
+        <i class="fa-solid fa-paper-plane"></i> Send Reset Link
+      </button>
+    </div>
+  </div>
+</div>

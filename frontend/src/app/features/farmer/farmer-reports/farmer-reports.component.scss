@@ -1,0 +1,139 @@
+﻿:host { display: block; }
+
+.farmer-reports-page { padding: 1.5rem; background: #F8FAF8; min-height: 100vh; }
+
+/* Hero Banner */
+.page-hero {
+  background: linear-gradient(135deg, #0F3D20 0%, #15803D 55%, #0D9488 100%);
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #FFFFFF;
+
+  .hero-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+
+    .hero-icon {
+      width: 56px; height: 56px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem; }
+    p { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+  }
+}
+
+/* Loading State */
+.loading-state { text-align: center; padding: 4rem 2rem; color: #6B7280; }
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid transparent;
+
+  &.stat-green { border-left-color: #15803D; .stat-icon { background: #DCFCE7; color: #15803D; } }
+  &.stat-blue  { border-left-color: #0288D1; .stat-icon { background: #E1F5FE; color: #0288D1; } }
+  &.stat-gold  { border-left-color: #F59E0B; .stat-icon { background: #FFFDE7; color: #F59E0B; } }
+  &.stat-purple{ border-left-color: #9333EA; .stat-icon { background: #F3E8FF; color: #9333EA; } }
+
+  .stat-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; flex-shrink: 0;
+  }
+
+  .stat-value { font-size: 1.6rem; font-weight: 700; color: #111827; line-height: 1.2; small { font-size: 0.75rem; color: #6B7280; } }
+  .stat-label { font-size: 0.78rem; color: #6B7280; margin-top: 0.2rem; }
+}
+
+/* Cards */
+.card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #F3F4F6;
+    h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #111827; i { margin-right: 0.5rem; } }
+  }
+
+  .card-body { padding: 1.25rem 1.5rem; }
+}
+
+/* Table */
+.table-wrapper { overflow-x: auto; }
+.data-table {
+  width: 100%; border-collapse: collapse; font-size: 0.875rem;
+  th { background: #F8FAF8; padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #E5E7EB; }
+  td { padding: 0.75rem 1rem; border-bottom: 1px solid #F3F4F6; color: #374151; }
+  tr:hover td { background: #F9FAFB; }
+}
+
+/* Empty State */
+.empty-state { text-align: center; padding: 3rem 1rem; color: #9CA3AF; }
+
+/* Badges */
+.badge {
+  padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  &.badge-success { background: #DCFCE7; color: #166534; }
+  &.badge-warning { background: #FEF9C3; color: #854D0E; }
+  &.badge-danger  { background: #FEE2E2; color: #991B1B; }
+}
+
+/* Utility */
+.text-green { color: #15803D; }
+.text-muted { color: #9CA3AF; }
+.d-block { display: block; }
+.mb-2 { margin-bottom: 0.5rem; }
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+  &.btn-sm { padding: 0.4rem 0.85rem; font-size: 0.8rem; }
+  &.btn-navy { background: #0F3D20; color: #FFFFFF; &:hover { background: #166534; } }
+  &.btn-outline-navy { background: transparent; border: 1.5px solid #0F3D20; color: #0F3D20; &:hover { background: #F0FDF4; } }
+}
+
+.crop-report-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .crop-mini-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #E2E8F0;
+    flex-shrink: 0;
+  }
+}

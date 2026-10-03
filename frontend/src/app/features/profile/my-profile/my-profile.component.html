@@ -1,0 +1,579 @@
+<div class="profile-page-wrapper">
+  <!-- Profile Header Hero Banner (Role-tailored) -->
+  <div class="profile-hero-banner" [ngClass]="'role-' + currentRole.toLowerCase()">
+    <div class="banner-avatar-wrap">
+      <div class="profile-avatar-badge">
+        <i *ngIf="currentRole === 'FARMER'" class="fa-solid fa-tractor"></i>
+        <i *ngIf="currentRole === 'DEALER'" class="fa-solid fa-store"></i>
+        <i *ngIf="currentRole === 'DELIVERY_PARTNER'" class="fa-solid fa-truck-fast"></i>
+        <i *ngIf="currentRole === 'ADMIN'" class="fa-solid fa-shield-halved"></i>
+      </div>
+    </div>
+
+    <div class="profile-banner-meta">
+      <h1 class="profile-name">{{ profile.name }}</h1>
+      <span class="profile-role">{{ getRoleLabel() }}</span>
+
+      <div class="profile-badge-row">
+        <span class="badge-verified">
+          <i class="fa-solid fa-circle-check"></i> {{ getRoleBadge() }}
+        </span>
+        <span *ngIf="currentRole === 'DEALER'" class="badge-sub-pill">
+          <i class="fa-solid fa-file-invoice"></i> GSTIN: {{ profile.gstin }}
+        </span>
+        <span *ngIf="currentRole === 'ADMIN'" class="badge-sub-pill badge-danger-soft">
+          <i class="fa-solid fa-lock"></i> Sole Administrator Account
+        </span>
+      </div>
+      <span class="profile-member-date">Verified CropDeal Stakeholder &bull; Active Workspace</span>
+    </div>
+
+    <!-- Edit Profile Toggle Action in Hero Banner for all roles -->
+    <div class="profile-hero-actions">
+      <button *ngIf="!isEditing" type="button" class="btn-hero-edit" (click)="enableEditMode()">
+        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+      </button>
+      <div *ngIf="isEditing" class="hero-edit-group">
+        <button type="button" class="btn-hero-cancel" (click)="cancelEdit()">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </button>
+        <button type="button" class="btn-hero-save" (click)="saveAllChanges()">
+          <i class="fa-solid fa-check"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editing Mode Banner Indicator -->
+  <div *ngIf="isEditing" class="profile-editing-banner">
+    <div class="alert-content">
+      <i class="fa-solid fa-pen-to-square"></i>
+      <span><strong>Editing Mode Active:</strong> Form fields are unlocked. Make your changes and click <strong>Save Changes</strong> to update your profile.</span>
+    </div>
+    <div class="alert-actions">
+      <button type="button" class="btn-alert-cancel" (click)="cancelEdit()">Cancel</button>
+      <button type="button" class="btn-alert-save" (click)="saveAllChanges()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs (4 Tabs) -->
+  <div class="profile-tabs-nav">
+    <button class="tab-item" [class.active]="selectedTab === 'personal'" (click)="selectedTab = 'personal'">
+      <i class="fa-solid fa-user"></i>
+      <span *ngIf="currentRole === 'FARMER'">Farmer Details</span>
+      <span *ngIf="currentRole === 'DEALER'">Dealer &amp; Business Info</span>
+      <span *ngIf="currentRole === 'DELIVERY_PARTNER'">Transporter &amp; Fleet</span>
+      <span *ngIf="currentRole === 'ADMIN'">Administrator Info</span>
+    </button>
+    <button class="tab-item" [class.active]="selectedTab === 'address'" (click)="selectedTab = 'address'">
+      <i class="fa-solid fa-location-dot"></i> Address &amp; Jurisdiction
+    </button>
+    <button class="tab-item" [class.active]="selectedTab === 'bank'" (click)="selectedTab = 'bank'">
+      <i class="fa-solid fa-building-columns"></i> Bank &amp; Settlement Account
+    </button>
+    <button class="tab-item" [class.active]="selectedTab === 'password'" (click)="selectedTab = 'password'">
+      <i class="fa-solid fa-lock"></i> Security &amp; Password
+    </button>
+  </div>
+
+  <!-- Main 2-Column Content Layout -->
+  <div class="profile-content-grid">
+    <!-- LEFT COLUMN: Active Tab Form -->
+    <div class="profile-main-card">
+
+      <!-- TAB 1: Personal / Role-specific Information -->
+      <div *ngIf="selectedTab === 'personal'" class="tab-pane">
+        <div class="pane-header">
+          <h3>
+            <i *ngIf="currentRole === 'FARMER'" class="fa-solid fa-tractor text-green"></i>
+            <i *ngIf="currentRole === 'DEALER'" class="fa-solid fa-store text-green"></i>
+            <i *ngIf="currentRole === 'DELIVERY_PARTNER'" class="fa-solid fa-truck-fast text-green"></i>
+            <i *ngIf="currentRole === 'ADMIN'" class="fa-solid fa-shield-halved text-green"></i>
+            <span *ngIf="currentRole === 'FARMER'"> Farmer Profile &amp; Land Registry</span>
+            <span *ngIf="currentRole === 'DEALER'"> Dealer Credentials &amp; Mandi License</span>
+            <span *ngIf="currentRole === 'DELIVERY_PARTNER'"> Fleet Operator &amp; Logistics Details</span>
+            <span *ngIf="currentRole === 'ADMIN'"> Platform Super Administrator Profile</span>
+          </h3>
+          <p class="pane-sub">
+            <span *ngIf="currentRole === 'FARMER'">Your verified farming credentials allow you to list crops and host auctions.</span>
+            <span *ngIf="currentRole === 'DEALER'">Your verified dealer credentials permit wholesale crop procurement and digital tax invoices.</span>
+            <span *ngIf="currentRole === 'DELIVERY_PARTNER'">Commercial fleet permits for inter-district agricultural transport contracts.</span>
+            <span *ngIf="currentRole === 'ADMIN'">Sole system administrator account managing platform governance, users, and escrow settlements.</span>
+          </p>
+        </div>
+
+        <form (ngSubmit)="savePersonal()">
+          <fieldset [disabled]="!isEditing" class="profile-fieldset">
+            <div class="form-grid-2">
+            <!-- Common Fields -->
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" [(ngModel)]="profile.name" name="pName" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" [(ngModel)]="profile.email" name="pEmail" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label>Contact Phone Number *</label>
+              <input type="text" [(ngModel)]="profile.phone" name="pPhone" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label>Gender</label>
+              <select [(ngModel)]="profile.gender" name="pGender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- FARMER SPECIFIC FIELDS -->
+            <ng-container *ngIf="currentRole === 'FARMER'">
+              <div class="form-group">
+                <label>Farmer Classification</label>
+                <select [(ngModel)]="profile.farmerType" name="pFarmerType" class="form-control">
+                  <option value="Individual Farmer">Individual Farmer</option>
+                  <option value="Commercial Farmer">Commercial Farmer</option>
+                  <option value="FPO Member">FPO (Farmer Producer Org) Member</option>
+                  <option value="Organic Certified Producer">Organic Certified Producer</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Land Holding Size</label>
+                <input type="text" [(ngModel)]="profile.landHolding" name="pLandHolding" class="form-control" placeholder="e.g. 5 Acres" />
+              </div>
+
+              <div class="form-group">
+                <label>Kisan Credit Card (KCC) No.</label>
+                <input type="text" [(ngModel)]="profile.kisanCardNumber" name="pKcc" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>Aadhaar Number (UIDAI)</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showAadhaar ? 'text' : 'password'" [(ngModel)]="profile.aadhaar" name="pAadhaar" class="form-control" />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showAadhaar = !showAadhaar"></i>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- DEALER SPECIFIC FIELDS -->
+            <ng-container *ngIf="currentRole === 'DEALER'">
+              <div class="form-group">
+                <label>Trading Firm / Company Name *</label>
+                <input type="text" [(ngModel)]="profile.businessName" name="pBusinessName" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Dealer Category</label>
+                <select [(ngModel)]="profile.dealerCategory" name="pDealerCat" class="form-control">
+                  <option value="Wholesale Merchant">Wholesale Merchant</option>
+                  <option value="Bulk Food Processor">Bulk Food Processor / Miller</option>
+                  <option value="Institutional Buyer">Institutional Buyer</option>
+                  <option value="Export Merchant">Agricultural Exporter</option>
+                  <option value="APMC Commission Agent">APMC Commission Agent</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>GSTIN Number *</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showGstin ? 'text' : 'password'" [(ngModel)]="profile.gstin" name="pGstin" class="form-control" required />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showGstin = !showGstin"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>APMC / Mandi Trade License No. *</label>
+                <input type="text" [(ngModel)]="profile.tradeLicense" name="pTradeLicense" class="form-control" required />
+              </div>
+
+              <div class="form-group span-2">
+                <label>Business PAN Number</label>
+                <input type="text" [(ngModel)]="profile.panNumber" name="pPan" class="form-control" />
+              </div>
+            </ng-container>
+
+            <!-- ADMIN SPECIFIC FIELDS -->
+            <ng-container *ngIf="currentRole === 'ADMIN'">
+              <div class="form-group">
+                <label>Admin Employee ID</label>
+                <input type="text" [(ngModel)]="profile.employeeId" name="pEmpId" class="form-control" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Department / Jurisdiction</label>
+                <input type="text" [(ngModel)]="profile.department" name="pDept" class="form-control" />
+              </div>
+
+              <div class="form-group span-2">
+                <label>Security Clearance &amp; System Authorization</label>
+                <input type="text" [(ngModel)]="profile.securityClearance" name="pSec" class="form-control" readonly />
+                <small class="text-muted d-block mt-1">
+                  <i class="fa-solid fa-lock text-green"></i> <strong>CropDeal Multi-Admin Policy:</strong> CropDeal enforces a single system root administrator account. Creating duplicate administrators is restricted to ensure secure platform governance.
+                </small>
+              </div>
+            </ng-container>
+
+            <!-- DELIVERY PARTNER SPECIFIC FIELDS -->
+            <ng-container *ngIf="currentRole === 'DELIVERY_PARTNER'">
+              <div class="form-group">
+                <label>Fleet / Logistics Agency Name *</label>
+                <input type="text" [(ngModel)]="profile.fleetAgencyName" name="pFleetName" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Commercial Vehicle Registration No. *</label>
+                <input type="text" [(ngModel)]="profile.vehicleNumber" name="pVehNo" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Vehicle / Carrier Capacity Type</label>
+                <input type="text" [(ngModel)]="profile.vehicleType" name="pVehType" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label>Heavy Commercial Driving License No. *</label>
+                <input type="text" [(ngModel)]="profile.drivingLicense" name="pDL" class="form-control" required />
+              </div>
+
+              <div class="form-group span-2">
+                <label>Primary Transit Corridor / Route</label>
+                <input type="text" [(ngModel)]="profile.operationalTerritory" name="pRoute" class="form-control" />
+              </div>
+            </ng-container>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button *ngIf="!isEditing" type="button" class="btn btn-edit-trigger" (click)="enableEditMode()">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Profile Information
+          </button>
+          <div *ngIf="isEditing" class="edit-btn-group">
+            <button type="button" class="btn btn-cancel-edit" (click)="cancelEdit()">
+              <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-save">
+              <i class="fa-solid fa-floppy-disk"></i> Save {{ getRoleLabel() }} Profile
+            </button>
+          </div>
+        </div>
+      </form>
+      </div>
+
+      <!-- TAB 2: Address Information -->
+      <div *ngIf="selectedTab === 'address'" class="tab-pane">
+        <div class="pane-header">
+          <h3><i class="fa-solid fa-location-dot text-green"></i> Address &amp; Operational Jurisdiction</h3>
+          <p class="pane-sub">
+            <span *ngIf="currentRole === 'FARMER'">Farm Gate and storage facility address for pickup inspections.</span>
+            <span *ngIf="currentRole === 'DEALER'">Registered corporate office and grain warehouse delivery hub.</span>
+            <span *ngIf="currentRole === 'DELIVERY_PARTNER'">Fleet depot and dispatch headquarters.</span>
+            <span *ngIf="currentRole === 'ADMIN'">Central Mandi Board Technology Headquarters.</span>
+          </p>
+        </div>
+
+        <form (ngSubmit)="saveAddress()">
+          <fieldset [disabled]="!isEditing" class="profile-fieldset">
+            <div class="form-stack">
+              <div class="form-group">
+                <label>Address Line 1</label>
+                <input type="text" [(ngModel)]="address.line1" name="aLine1" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Address Line 2 / Landmark</label>
+                <input type="text" [(ngModel)]="address.line2" name="aLine2" class="form-control" />
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label>City / District</label>
+                  <input type="text" [(ngModel)]="address.city" name="aCity" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                  <label>State</label>
+                  <select [(ngModel)]="address.state" name="aState" class="form-control">
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Delhi">Delhi</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Pincode</label>
+                  <input type="text" [(ngModel)]="address.pincode" name="aPin" class="form-control" required />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button *ngIf="!isEditing" type="button" class="btn btn-edit-trigger" (click)="enableEditMode()">
+              <i class="fa-solid fa-pen-to-square"></i> Edit Address Details
+            </button>
+            <div *ngIf="isEditing" class="edit-btn-group">
+              <button type="button" class="btn btn-cancel-edit" (click)="cancelEdit()">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </button>
+              <button type="submit" class="btn btn-save">
+                <i class="fa-solid fa-floppy-disk"></i> Save Address
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 3: Bank Details -->
+      <div *ngIf="selectedTab === 'bank'" class="tab-pane">
+        <div class="pane-header">
+          <h3><i class="fa-solid fa-building-columns text-green"></i> Bank Details &amp; Escrow Payouts</h3>
+          <p class="pane-sub">
+            <span *ngIf="currentRole === 'FARMER'">Your verified bank account where escrow funds are automatically credited upon order confirmation.</span>
+            <span *ngIf="currentRole === 'DEALER'">Linked bank account for escrow wallet top-ups and refund releases.</span>
+            <span *ngIf="currentRole === 'DELIVERY_PARTNER'">Commercial freight payout account for completed logistics consignments.</span>
+            <span *ngIf="currentRole === 'ADMIN'">CropDeal Trust &amp; Escrow Settlement Reserve Account.</span>
+          </p>
+        </div>
+
+        <form (ngSubmit)="saveBank()">
+          <fieldset [disabled]="!isEditing" class="profile-fieldset">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" [(ngModel)]="bank.holderName" name="bName" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Bank Name</label>
+                <select [(ngModel)]="bank.bankName" name="bBank" class="form-control">
+                  <option value="State Bank of India">State Bank of India</option>
+                  <option value="HDFC Bank">HDFC Bank</option>
+                  <option value="ICICI Bank">ICICI Bank</option>
+                  <option value="Punjab National Bank">Punjab National Bank</option>
+                  <option value="Bank of Baroda">Bank of Baroda</option>
+                  <option value="Canara Bank">Canara Bank</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Account Number</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showAccount ? 'text' : 'password'" [(ngModel)]="bank.accountNumber" name="bAcc" class="form-control" required />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showAccount = !showAccount"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>IFSC Code</label>
+                <input type="text" [(ngModel)]="bank.ifsc" name="bIfsc" class="form-control" required />
+              </div>
+
+              <div class="form-group span-2">
+                <label>Account Type</label>
+                <select [(ngModel)]="bank.accountType" name="bType" class="form-control">
+                  <option value="Savings Account">Savings Account</option>
+                  <option value="Current Account">Current Account</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button *ngIf="!isEditing" type="button" class="btn btn-edit-trigger" (click)="enableEditMode()">
+              <i class="fa-solid fa-pen-to-square"></i> Edit Bank Details
+            </button>
+            <div *ngIf="isEditing" class="edit-btn-group">
+              <button type="button" class="btn btn-cancel-edit" (click)="cancelEdit()">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </button>
+              <button type="submit" class="btn btn-save">
+                <i class="fa-solid fa-floppy-disk"></i> Save Bank Details
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 4: Change Password -->
+      <div *ngIf="selectedTab === 'password'" class="tab-pane">
+        <div class="pane-header">
+          <h3><i class="fa-solid fa-lock text-green"></i> Change Password</h3>
+          <p class="pane-sub">Update your CropDeal account password regularly to protect your agricultural transactions.</p>
+        </div>
+
+        <form (ngSubmit)="savePassword()">
+          <div class="password-split-layout">
+            <div class="password-inputs-col">
+              <div class="form-group">
+                <label>Current Password</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showCurrentPass ? 'text' : 'password'" [(ngModel)]="password.current" name="pCurrent" class="form-control" placeholder="Enter current password" />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showCurrentPass = !showCurrentPass"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>New Password</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showNewPass ? 'text' : 'password'" [(ngModel)]="password.newPass" name="pNew" class="form-control" placeholder="Enter new password" />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showNewPass = !showNewPass"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <div class="input-icon-wrap">
+                  <input [type]="showConfirmPass ? 'text' : 'password'" [(ngModel)]="password.confirmPass" name="pConfirm" class="form-control" placeholder="Confirm new password" />
+                  <i class="fa-regular fa-eye icon-right cursor-pointer" (click)="showConfirmPass = !showConfirmPass"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Requirements Card -->
+            <div class="password-req-box">
+              <div class="req-title">
+                <i class="fa-solid fa-shield-check text-green"></i>
+                <strong>Security Standards</strong>
+              </div>
+              <ul class="req-list">
+                <li><i class="fa-solid fa-check text-green"></i> At least 8 characters long</li>
+                <li><i class="fa-solid fa-check text-green"></i> Contains at least one uppercase letter</li>
+                <li><i class="fa-solid fa-check text-green"></i> Contains at least one lowercase letter</li>
+                <li><i class="fa-solid fa-check text-green"></i> Contains at least one number</li>
+                <li><i class="fa-solid fa-check text-green"></i> Encrypted with BCrypt hashing</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-save">
+              <i class="fa-solid fa-key"></i> Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Role-Tailored Account Status & Summary -->
+    <div class="profile-sidebar-cards">
+      <!-- Account Status Card -->
+      <div class="side-widget-card status-widget">
+        <div class="widget-header">
+          <i class="fa-solid fa-shield-check text-green"></i>
+          <strong>KYC &amp; Verification Status</strong>
+        </div>
+        <div class="widget-body text-center">
+          <div class="big-check-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h4 class="verified-title">{{ getRoleBadge() }}</h4>
+          <p class="verified-desc" *ngIf="currentRole === 'FARMER'">Your Kisan land registry &amp; Aadhaar credentials are fully verified.</p>
+          <p class="verified-desc" *ngIf="currentRole === 'DEALER'">Your GSTIN &amp; APMC Mandi trading permit are fully verified and active.</p>
+          <p class="verified-desc" *ngIf="currentRole === 'DELIVERY_PARTNER'">Commercial fleet permit &amp; heavy transit license verified.</p>
+          <p class="verified-desc" *ngIf="currentRole === 'ADMIN'">Primary System Root Authority. Single administrative governance account.</p>
+        </div>
+      </div>
+
+      <!-- Account Summary Card (Role-tailored metrics) -->
+      <div class="side-widget-card summary-widget">
+        <div class="widget-header">
+          <i class="fa-solid fa-chart-simple text-green"></i>
+          <strong>{{ getRoleLabel() }} Summary</strong>
+        </div>
+        <div class="widget-body p-0">
+          <!-- FARMER METRICS -->
+          <ng-container *ngIf="currentRole === 'FARMER'">
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-leaf text-green"></i> Total Crops Listed</div>
+              <strong class="item-val text-green">12</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-box text-blue"></i> Harvest Orders</div>
+              <strong class="item-val text-blue">18</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-comments text-orange"></i> Price Negotiations</div>
+              <strong class="item-val text-orange">25</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-indian-rupee-sign text-purple"></i> Total Harvest Earnings</div>
+              <strong class="item-val text-purple">₹4,18,000</strong>
+            </div>
+          </ng-container>
+
+          <!-- DEALER METRICS -->
+          <ng-container *ngIf="currentRole === 'DEALER'">
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-receipt text-green"></i> Purchase Orders</div>
+              <strong class="item-val text-green">14 Orders</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-scale-balanced text-blue"></i> Procured Volume</div>
+              <strong class="item-val text-blue">28,500 KG</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-handshake text-orange"></i> Active Negotiations</div>
+              <strong class="item-val text-orange">8 Open</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-wallet text-purple"></i> Total Escrow Spend</div>
+              <strong class="item-val text-purple">₹6,45,000</strong>
+            </div>
+          </ng-container>
+
+          <!-- DELIVERY PARTNER METRICS -->
+          <ng-container *ngIf="currentRole === 'DELIVERY_PARTNER'">
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-truck-ramp-box text-green"></i> Completed Trips</div>
+              <strong class="item-val text-green">42 Trips</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-route text-blue"></i> Active Shipments</div>
+              <strong class="item-val text-blue">3 In Transit</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-road text-orange"></i> Distance Covered</div>
+              <strong class="item-val text-orange">8,450 KM</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-indian-rupee-sign text-purple"></i> Freight Payouts</div>
+              <strong class="item-val text-purple">₹1,85,000</strong>
+            </div>
+          </ng-container>
+
+          <!-- ADMIN METRICS -->
+          <ng-container *ngIf="currentRole === 'ADMIN'">
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-user-shield text-green"></i> Administrator Type</div>
+              <strong class="item-val text-green">Single Root Admin</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-users text-blue"></i> Active Stakeholders</div>
+              <strong class="item-val text-blue">4 Accounts</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-boxes-stacked text-orange"></i> Platform Orders</div>
+              <strong class="item-val text-orange">26 Traded</strong>
+            </div>
+            <div class="summary-item-row">
+              <div class="item-label"><i class="fa-solid fa-server text-purple"></i> Escrow Health</div>
+              <strong class="item-val text-purple">99.98%</strong>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

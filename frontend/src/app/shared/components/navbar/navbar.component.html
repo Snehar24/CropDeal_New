@@ -1,0 +1,73 @@
+<header class="cropdeal-navbar">
+  <div class="nav-left">
+    <a routerLink="/" class="brand-logo" (click)="closeAllDropdowns()">
+      <div class="logo-icon">
+        <i class="fa-solid fa-seedling"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-crop">Crop</span><span class="brand-deal">Deal</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Navigation Links: Home, Mandi Price, Live Bidding -->
+  <nav class="nav-center">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeAllDropdowns()">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <a routerLink="/prices" routerLinkActive="active" class="nav-link" (click)="closeAllDropdowns()">
+      <i class="fa-solid fa-chart-line"></i> Mandi Price
+    </a>
+    <a routerLink="/bidding" routerLinkActive="active" class="nav-link" (click)="closeAllDropdowns()">
+      <i class="fa-solid fa-gavel"></i> Live Bidding
+    </a>
+    <a *ngIf="currentUser" [routerLink]="dashboardRoute" routerLinkActive="active" class="nav-link dashboard-link" (click)="closeAllDropdowns()">
+      <i class="fa-solid fa-gauge-high"></i> Dashboard
+    </a>
+  </nav>
+
+  <!-- Right Actions: Notifications, Profile / Login -->
+  <div class="nav-right">
+    <!-- Notification Bell (hidden on home page only) -->
+    <a *ngIf="!isHomePage" routerLink="/notifications" class="icon-btn notif-btn" title="Notifications & Price Alerts" (click)="closeAllDropdowns()">
+      <i class="fa-regular fa-bell"></i>
+      <span class="badge-dot" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }}</span>
+    </a>
+
+    <ng-container *ngIf="currentUser">
+
+      <!-- User Profile Dropdown -->
+      <div class="dropdown-wrapper">
+        <button class="user-avatar-btn" (click)="isUserDropdownOpen = !isUserDropdownOpen; isNotifDropdownOpen = false">
+          <div class="nav-user-avatar"><i class="fa-solid fa-user"></i></div>
+          <div class="user-meta">
+            <span class="user-name">{{ currentUser.name || 'Ramesh Kumar' }}</span>
+            <span class="user-role-badge">{{ currentUser.role | titlecase }}</span>
+          </div>
+          <i class="fa-solid fa-chevron-down caret" [class.rotate]="isUserDropdownOpen"></i>
+        </button>
+        <div class="dropdown-menu user-menu" *ngIf="isUserDropdownOpen">
+          <div class="user-menu-header">
+            <span class="user-name-title">{{ currentUser.name || 'Ramesh Patel' }}</span>
+            <span class="user-email-text">{{ currentUser.email }}</span>
+          </div>
+          <a routerLink="/profile" class="dropdown-item" (click)="closeAllDropdowns()">
+            <i class="fa-regular fa-user"></i> Profile
+          </a>
+          <div class="divider"></div>
+          <button class="dropdown-item logout-item" (click)="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Guest: Login Action Button -->
+    <ng-container *ngIf="!currentUser">
+      <a routerLink="/auth/login" class="login-action-btn">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+      </a>
+    </ng-container>
+  </div>
+</header>
+

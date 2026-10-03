@@ -1,0 +1,70 @@
+<div class="dealer-dashboard-container">
+  <!-- Dark Green Dashboard Hero Banner -->
+  <section class="dashboard-hero">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <i class="fa-solid fa-cart-shopping"></i> Verified Dealer Procurement Hub
+      </div>
+      <h2>Welcome, {{ authService.currentUser?.name || 'AgriTrade Corp' }}!</h2>
+      <p>Procure premium certified harvests directly from farmers, participate in real-time auctions, and manage secured escrow settlements.</p>
+    </div>
+    <div class="hero-actions">
+      <a routerLink="/catalog" class="btn btn-navy">
+        <i class="fa-solid fa-wheat-awn"></i> Browse All Crops
+      </a>
+      <a routerLink="/bidding" class="btn btn-outline-white">
+        <i class="fa-solid fa-gavel"></i> Live Auction Arena
+      </a>
+      <a routerLink="/profile" class="btn btn-outline-white">
+        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+      </a>
+    </div>
+  </section>
+
+  <!-- Metric Stat Cards (4 Boxes) -->
+  <div class="grid-4 mb-3">
+    <a routerLink="/orders" class="stat-card green" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-green">
+        <i class="fa-solid fa-box-archive"></i>
+      </div>
+      <div class="stat-value">{{ orders.length }}</div>
+      <div class="stat-label">My Orders</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-truck"></i> {{ totalPurchasedVolume | number }} KG Procured
+      </div>
+    </a>
+
+    <a routerLink="/wallet" class="stat-card navy" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-navy">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <div class="stat-value">₹{{ (walletBalance || 0) | number:'1.0-0' }}</div>
+      <div class="stat-label">Procurement Balance</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-lock"></i> Escrow Ready
+      </div>
+    </a>
+
+    <a routerLink="/bidding" class="stat-card gold" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-gold">
+        <i class="fa-solid fa-gavel"></i>
+      </div>
+      <div class="stat-value">{{ auctions.length }}</div>
+      <div class="stat-label">Auctions Live Now</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-bolt"></i> Competitive Bidding
+      </div>
+    </a>
+
+    <a routerLink="/negotiations" class="stat-card teal" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-teal">
+        <i class="fa-solid fa-comments-dollar"></i>
+      </div>
+      <div class="stat-value">{{ negotiations.length }}</div>
+      <div class="stat-label">Active Negotiations</div>
+      <div class="stat-change positive">
+        <i class="fa-solid fa-handshake"></i> Direct Farmer Proposals
+      </div>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,184 @@
+<div class="bidding-page-wrapper">
+  <!-- Hero Banner -->
+  <section class="bidding-hero">
+    <div class="bidding-hero-content">
+      <h1>Live <span class="text-green">Bidding</span></h1>
+      <p class="hero-subtitle">
+        Bid directly from farmers and get the best farm fresh produce at competitive prices.
+      </p>
+
+      <!-- 3 Feature Badges -->
+      <div class="bidding-feature-pills">
+        <div class="feature-pill">
+          <div class="pill-icon"><i class="fa-solid fa-leaf"></i></div>
+          <div class="pill-text">
+            <strong>Direct from Farmers</strong>
+            <span>Fresh & Quality Produce</span>
+          </div>
+        </div>
+
+        <div class="feature-pill">
+          <div class="pill-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="pill-text">
+            <strong>Transparent Bidding</strong>
+            <span>Fair and Secure</span>
+          </div>
+        </div>
+
+        <div class="feature-pill">
+          <div class="pill-icon"><i class="fa-solid fa-truck-fast"></i></div>
+          <div class="pill-text">
+            <strong>Better Prices</strong>
+            <span>Save More</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <div class="container main-content-area">
+    <!-- Filter Card -->
+    <div class="filter-card">
+      <div class="filter-controls-row">
+        <div class="filter-item">
+          <label><i class="fa-solid fa-location-dot text-green"></i> State</label>
+          <select [(ngModel)]="selectedState" class="form-select">
+            <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label><i class="fa-solid fa-building text-green"></i> District</label>
+          <select [(ngModel)]="selectedDistrict" class="form-select">
+            <option *ngFor="let d of districts" [value]="d">{{ d }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label><i class="fa-solid fa-leaf text-green"></i> Commodity</label>
+          <select [(ngModel)]="selectedCommodity" class="form-select">
+            <option *ngFor="let c of commodities" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label><i class="fa-solid fa-arrow-down-short-wide text-green"></i> Sort By</label>
+          <select [(ngModel)]="sortBy" class="form-select">
+            <option *ngFor="let o of sortOptions" [value]="o">{{ o }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item search-item">
+          <label class="invisible-label">Search</label>
+          <div class="search-input-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Search crops, variety or farmer..." />
+          </div>
+        </div>
+
+        <div class="filter-item action-item">
+          <label class="invisible-label">Submit</label>
+          <button class="btn btn-search" (click)="onSearch()">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-Column Auction Cards Grid -->
+    <div class="auction-grid-4">
+      <div class="auction-card" *ngFor="let auction of pagedAuctions" (click)="goToDetails(auction.id)">
+        <!-- Top Image with badges -->
+        <div class="auction-card-thumb">
+          <img [src]="auction.image" [alt]="auction.cropName" (error)="onCropImageError($event)" />
+          
+          <div class="card-status-badge" [class.ending-soon]="auction.isEndingSoon" [class.live-bidding]="!auction.isEndingSoon">
+            <span class="status-dot"></span>
+            {{ auction.isEndingSoon ? 'Ending Soon' : 'Live Bidding' }}
+          </div>
+
+          <div class="timer-badge">
+            <i class="fa-regular fa-clock"></i> {{ auction.timeRemaining }}
+          </div>
+
+
+        </div>
+
+        <!-- Card Body -->
+        <div class="auction-card-body">
+          <h3 class="crop-title">{{ auction.cropName }}</h3>
+          <p class="crop-variety text-muted">{{ auction.variety }}</p>
+          <div class="crop-location">
+            <i class="fa-solid fa-location-dot text-muted"></i> {{ auction.location }}
+          </div>
+
+          <!-- Price & Quantity Mint Box -->
+          <div class="bid-meta-box">
+            <div class="meta-col">
+              <span class="meta-lbl">Current Bid</span>
+              <span class="bid-price">₹{{ auction.currentBid | number:'1.2-2' }} <small>/ Kg</small></span>
+            </div>
+            <div class="meta-col">
+              <span class="meta-lbl">Total Quantity</span>
+              <span class="bid-qty">{{ auction.totalQuantity | number }} Kg</span>
+            </div>
+          </div>
+
+          <!-- Farmer Row -->
+          <div class="farmer-row">
+            <div class="farmer-avatar-circle">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="farmer-info">
+              <span class="farmer-name">{{ auction.farmerName }}</span>
+              <span class="farmer-tag">Farmer</span>
+            </div>
+            <div class="bids-counter">
+              {{ auction.bidsCount }} Bids
+            </div>
+          </div>
+
+          <!-- Place Bid Action -->
+          <button class="btn-place-bid" (click)="goToDetails(auction.id); $event.stopPropagation()">
+            <i class="fa-solid fa-gavel"></i> Place Bid
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bidding-pagination">
+      <span class="results-summary">Showing {{ showingFrom }} to {{ showingTo }} of {{ totalAuctions }} live auctions</span>
+      <div class="pag-controls">
+        <button class="pag-btn" [disabled]="currentPage === 1" (click)="prevPage()">&lt;</button>
+        <button
+          *ngFor="let p of pageNumbers"
+          class="pag-btn"
+          [class.active]="currentPage === p"
+          (click)="goToPage(p)">{{ p }}</button>
+        <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">&gt;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standard Dark Green Footer -->
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <i class="fa-solid fa-seedling brand-icon"></i>
+        <span class="brand-text">CropDeal</span>
+      </div>
+      <div class="footer-links">
+        <span>Empowering Farmers</span>
+        <span class="divider">|</span>
+        <span>Fair Prices</span>
+        <span class="divider">|</span>
+        <span>Better Opportunities</span>
+      </div>
+      <div class="footer-copy">
+        &copy; 2026 CropDeal. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</div>

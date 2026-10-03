@@ -1,0 +1,63 @@
+<div class="delivery-dashboard-container">
+  <!-- Dashboard Hero Banner -->
+  <section class="dashboard-hero">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <i class="fa-solid fa-truck-fast"></i> Kisan Logistics &amp; Farm Transport
+      </div>
+      <h2>Welcome, {{ authService.currentUser?.name || 'Delivery Partner' }}!</h2>
+      <p>Accept farm gate pickup requests, transmit live GPS telemetry, and complete secure OTP handovers.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn" [ngClass]="isAvailable ? 'btn-danger' : 'btn-primary-green'" (click)="toggleAvailability()">
+        <i class="fa-solid" [class.fa-power-off]="isAvailable" [class.fa-check]="!isAvailable"></i>
+        {{ isAvailable ? 'Go Offline' : 'Go Online' }}
+      </button>
+      <a routerLink="/delivery/my-deliveries" class="btn btn-navy">
+        <i class="fa-solid fa-box-open"></i> My Deliveries
+      </a>
+      <a routerLink="/profile" class="btn btn-outline-white">
+        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+      </a>
+    </div>
+  </section>
+
+  <!-- Metric Stat Cards (4 Boxes) -->
+  <div class="grid-4 mb-3">
+    <a routerLink="/delivery/my-deliveries" class="stat-card green" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-green">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="stat-value">{{ completedCount }}</div>
+      <div class="stat-label">Delivered Orders</div>
+      <div class="stat-change positive"><i class="fa-solid fa-star"></i> 100% On-Time Record</div>
+    </a>
+
+    <a routerLink="/wallet" class="stat-card navy" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-navy">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <div class="stat-value">₹{{ totalEarnings | number }}</div>
+      <div class="stat-label">Trip Earnings</div>
+      <div class="stat-change positive"><i class="fa-solid fa-bolt"></i> Direct Wallet Payout</div>
+    </a>
+
+    <a routerLink="/delivery/my-deliveries" class="stat-card gold" style="text-decoration: none; cursor: pointer;">
+      <div class="stat-icon bg-gold">
+        <i class="fa-solid fa-truck-ramp-box"></i>
+      </div>
+      <div class="stat-value">{{ availableDeliveries.length }}</div>
+      <div class="stat-label">Available Pickups</div>
+      <div class="stat-change positive"><i class="fa-solid fa-location-arrow"></i> Radius: 25 KM</div>
+    </a>
+
+    <div class="stat-card teal">
+      <div class="stat-icon bg-teal">
+        <i class="fa-solid fa-satellite-dish"></i>
+      </div>
+      <div class="stat-value">{{ isAvailable ? 'ONLINE' : 'IDLE' }}</div>
+      <div class="stat-label">Agent Status</div>
+      <div class="stat-change positive"><i class="fa-solid fa-wifi"></i> GPS Synced</div>
+    </div>
+  </div>
+</div>

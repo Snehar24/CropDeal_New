@@ -1,0 +1,159 @@
+<div class="neg-page-wrapper">
+  <!-- Banner matching Screen 16 -->
+  <div class="neg-hero-banner">
+    <div class="banner-content">
+      <h1>Negotiations</h1>
+      <p>View and manage negotiations for your crops with dealers.</p>
+    </div>
+  </div>
+
+  <!-- Status Tabs matching Screen 16 -->
+  <div class="neg-status-tabs">
+    <button class="status-tab-btn" [class.active]="selectedTab === 'ALL'" (click)="setTab('ALL')">
+      All <span class="tab-badge green">8</span>
+    </button>
+    <button class="status-tab-btn" [class.active]="selectedTab === 'PENDING'" (click)="setTab('PENDING')">
+      Pending <span class="tab-badge grey">4</span>
+    </button>
+    <button class="status-tab-btn" [class.active]="selectedTab === 'ACCEPTED'" (click)="setTab('ACCEPTED')">
+      Accepted <span class="tab-badge grey">2</span>
+    </button>
+    <button class="status-tab-btn" [class.active]="selectedTab === 'REJECTED'" (click)="setTab('REJECTED')">
+      Rejected <span class="tab-badge grey">2</span>
+    </button>
+  </div>
+
+  <!-- Filter Row -->
+  <div class="neg-filter-card">
+    <div class="filter-row">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()" placeholder="Search by crop or dealer name..." />
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="cropFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Crops</option>
+          <option value="Paddy (Rice)">Paddy (Rice)</option>
+          <option value="Tomato">Tomato</option>
+          <option value="Onion">Onion</option>
+          <option value="Green Chilli">Green Chilli</option>
+        </select>
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Status</option>
+          <option value="WAITING">Wait for Dealer Counter</option>
+          <option value="COUNTERED">Dealer Countered</option>
+          <option value="NEGOTIATING">Negotiating</option>
+        </select>
+      </div>
+
+      <div class="date-range-box">
+        <i class="fa-regular fa-calendar"></i>
+        <span>Select Date Range</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Negotiations Table Card -->
+  <div class="neg-table-card">
+    <div class="table-responsive">
+      <table class="neg-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Crop Details</th>
+            <th>{{ isDealer ? 'Farmer Details' : 'Dealer Details' }}</th>
+            <th>Standard Price<br><small>(₹ per KG)</small></th>
+            <th>Expected Counter<br><small>(₹ per KG)</small></th>
+            <th>Current Counter<br><small>(₹ per KG)</small></th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredItems">
+            <td class="text-muted">{{ item.id }}</td>
+            <td class="crop-details-cell">
+              <img [src]="item.image" [alt]="item.cropName" class="crop-thumb" (error)="onCropImageError($event)" />
+              <div class="crop-meta">
+                <strong class="crop-title">{{ item.cropName }}</strong>
+                <small class="crop-sub">Grade: {{ item.grade }}</small>
+                <small class="crop-sub">Quantity: {{ item.quantity }} kg</small>
+              </div>
+            </td>
+            <td class="dealer-cell">
+              <strong class="dealer-name">{{ isDealer ? item.farmerName : item.dealerName }}</strong>
+              <div class="dealer-info"><i class="fa-solid fa-location-dot"></i> {{ isDealer ? item.farmerLocation : item.dealerLocation }}</div>
+              <div class="dealer-info"><i class="fa-solid fa-phone"></i> {{ isDealer ? item.farmerPhone : item.dealerPhone }}</div>
+            </td>
+            <td class="price-val">₹{{ item.standardPrice }}</td>
+            <td class="counter-expected">
+              <strong>₹{{ item.expectedCounter }}</strong>
+              <small>({{ isDealer ? 'Farmer' : 'Dealer' }})</small>
+            </td>
+            <td class="counter-current">
+              <strong *ngIf="item.currentCounter" class="text-green">₹{{ item.currentCounter }}</strong>
+              <small *ngIf="item.currentCounter">({{ isDealer ? 'Dealer' : 'Farmer' }})</small>
+              <span *ngIf="!item.currentCounter">-</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="item.statusClass">
+                <i [class]="item.statusIcon"></i> {{ item.statusLabel }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-group">
+                <button class="btn-action btn-accept" (click)="accept(item)">
+                  <i class="fa-solid fa-check"></i> Accept
+                </button>
+                <button class="btn-action btn-reject" (click)="reject(item)">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+                <button class="btn-action btn-counter" (click)="openCounterModal(item)">
+                  <i class="fa-solid fa-pencil"></i> Counter
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="neg-pagination">
+      <span>Showing 1 to {{ filteredItems.length }} of 8 negotiations</span>
+      <div class="pag-btns">
+        <button class="pag-btn">&lt;</button>
+        <button class="pag-btn active">1</button>
+        <button class="pag-btn">2</button>
+        <button class="pag-btn">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Counter Offer -->
+<div class="modal-backdrop" *ngIf="isCounterModalOpen && activeItem" (click)="isCounterModalOpen = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-pencil text-green"></i> Send Counter Offer</h3>
+      <button class="close-x" (click)="isCounterModalOpen = false">&times;</button>
+    </div>
+    <form (ngSubmit)="submitCounter()">
+      <div class="modal-body">
+        <p class="text-muted small">Proposed deal with <strong>{{ isDealer ? activeItem.farmerName : activeItem.dealerName }}</strong> for <strong>{{ activeItem.cropName }}</strong>.</p>
+        <div class="form-group">
+          <label>Your Counter Price (₹ / KG) *</label>
+          <input type="number" [(ngModel)]="counterPrice" name="cPrice" class="form-control" min="1" step="0.5" required />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="isCounterModalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-save">Send Counter Offer</button>
+      </div>
+    </form>
+  </div>
+</div>

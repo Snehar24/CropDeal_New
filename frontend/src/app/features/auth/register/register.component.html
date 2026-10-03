@@ -1,0 +1,158 @@
+<div class="login-page-centered">
+  <div class="register-card">
+    <div class="card-top-nav" style="margin-bottom: 12px;">
+      <a routerLink="/auth/login" class="btn-back-link" style="display: inline-flex; align-items: center; gap: 6px; color: #64748B; font-size: 0.85rem; font-weight: 600; text-decoration: none; cursor: pointer;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Login
+      </a>
+    </div>
+
+    <div class="login-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-seedling"></i>
+      </div>
+      <h2>Create an Account</h2>
+      <p class="subtitle">Join CropDeal to trade produce with guaranteed security</p>
+    </div>
+
+    <!-- Quick Role Selector -->
+    <div class="role-selector-bar">
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="user.role === 'FARMER'"
+        (click)="selectRole('FARMER')">
+        <i class="fa-solid fa-tractor"></i> Farmer
+      </button>
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="user.role === 'DEALER'"
+        (click)="selectRole('DEALER')">
+        <i class="fa-solid fa-store"></i> Dealer
+      </button>
+      <button
+        type="button"
+        class="role-pill-btn"
+        [class.active]="user.role === 'DELIVERY_PARTNER'"
+        (click)="selectRole('DELIVERY_PARTNER')">
+        <i class="fa-solid fa-truck"></i> Partner
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="register-form">
+      <div class="form-row-2col">
+        <!-- Full Name -->
+        <div class="form-group">
+          <label>Full Name *</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-user input-icon"></i>
+            <input
+              type="text"
+              [(ngModel)]="user.name"
+              name="name"
+              class="form-control"
+              placeholder="e.g. Ramesh Kumar"
+              required />
+          </div>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-phone input-icon"></i>
+            <input
+              type="tel"
+              [(ngModel)]="user.phone"
+              name="phone"
+              class="form-control"
+              placeholder="+91 98765 43210"
+              required />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row-2col">
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email Address *</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input
+              type="email"
+              [(ngModel)]="user.email"
+              name="email"
+              class="form-control"
+              placeholder="name@example.com"
+              required />
+          </div>
+        </div>
+
+        <!-- State -->
+        <div class="form-group">
+          <label>State / Region *</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-location-dot input-icon"></i>
+            <select [(ngModel)]="selectedState" name="state" class="form-control select-control">
+              <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row-2col">
+        <!-- Password -->
+        <div class="form-group">
+          <label>Password *</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="user.password"
+              name="password"
+              class="form-control"
+              placeholder="Min. 8 characters"
+              required />
+            <button type="button" class="eye-toggle-btn" (click)="togglePassword()">
+              <i class="fa-regular" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+          <label>Confirm Password *</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              class="form-control"
+              placeholder="Repeat password"
+              required />
+            <button type="button" class="eye-toggle-btn" (click)="toggleConfirmPassword()">
+              <i class="fa-regular" [class.fa-eye]="!showConfirmPassword" [class.fa-eye-slash]="showConfirmPassword"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms & Conditions -->
+      <div class="remember-row">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms" required />
+          <span>I agree to the Terms of Service & Privacy Policy</span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        <span *ngIf="!isLoading">
+          <i class="fa-solid fa-user-plus"></i> Complete Registration
+        </span>
+        <span *ngIf="isLoading"><i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...</span>
+      </button>
+    </form>
+  </div>
+</div>

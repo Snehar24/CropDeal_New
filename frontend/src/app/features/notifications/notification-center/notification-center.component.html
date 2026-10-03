@@ -1,0 +1,182 @@
+<div class="notification-center-page">
+
+  <!-- Hero Banner -->
+  <div class="page-hero">
+    <div class="hero-content">
+      <div class="hero-icon"><i class="fa-solid fa-bell"></i></div>
+      <div>
+        <h1>Notifications &amp; Price Alerts</h1>
+        <p>Activity center and real-time mandi crop price alerts for farmers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar: Two Clearly Separated Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'notifications'" (click)="switchTab('notifications')">
+      <i class="fa-solid fa-bell"></i> Notifications
+      <span class="tab-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'alerts'" (click)="switchTab('alerts')">
+      <i class="fa-solid fa-chart-line"></i> Price Alerts
+      <span class="tab-badge alt" *ngIf="priceAlerts.length > 0">{{ priceAlerts.length }}</span>
+    </button>
+  </div>
+
+  <!-- Tab 1: Notifications -->
+  <div *ngIf="activeTab === 'notifications'">
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-inbox text-green"></i> Activity Notifications</h3>
+        <button *ngIf="unreadCount > 0" class="btn btn-sm btn-outline-navy" (click)="markAllRead()">
+          <i class="fa-solid fa-check-double"></i> Mark All Read
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="notifications.length > 0">
+          <div *ngFor="let n of notifications" class="notif-row" [class.unread]="!n.read" (click)="markRead(n.id)">
+            <div class="notif-icon-wrap" [class.unread-icon]="!n.read">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-msg">{{ n.message }}</div>
+              <div class="notif-meta">
+                <small class="text-muted">{{ n.createdAt | date:'medium' }}</small>
+                <span *ngIf="!n.read" class="badge badge-new">New</span>
+              </div>
+            </div>
+            <button class="delete-btn" (click)="deleteNotif(n.id); $event.stopPropagation()" title="Delete notification">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="notifications.length === 0" class="empty-state">
+          <i class="fa-regular fa-bell-slash fa-3x mb-3 text-muted"></i>
+          <h4>No Notifications</h4>
+          <p class="text-muted">You are all caught up! Orders, payments, bids, and price alert events will appear here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Price Alerts (Farmer Price Alert Hub) -->
+  <div *ngIf="activeTab === 'alerts'">
+    <div class="card">
+      <div class="card-header d-flex justify-between align-center">
+        <h3><i class="fa-solid fa-chart-line text-green"></i> Farmer Crop Price Alerts</h3>
+        <div class="d-flex gap-2">
+          <button *ngIf="isFarmer" class="btn btn-sm btn-primary" (click)="openCreateAlertModal()">
+            <i class="fa-solid fa-plus"></i> Set Price Alert
+          </button>
+          <a routerLink="/prices" class="btn btn-sm btn-outline-navy">View Mandi Prices</a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="priceAlerts.length > 0">
+          <div *ngFor="let alert of priceAlerts" class="alert-row" [class.triggered]="alert.status === 'TRIGGERED'">
+            <div class="alert-icon-wrap" [class.triggered-icon]="alert.status === 'TRIGGERED'">
+              <i class="fa-solid" [ngClass]="alert.status === 'TRIGGERED' ? 'fa-bolt' : 'fa-chart-line'"></i>
+            </div>
+            <div class="alert-content">
+              <div class="alert-title">
+                <strong>{{ alert.cropName }}</strong>
+                <span class="market-tag" *ngIf="alert.mandi || alert.district || alert.state">
+                  <i class="fa-solid fa-location-dot"></i> {{ alert.mandi || alert.district }} {{ alert.state ? '(' + alert.state + ')' : '' }}
+                </span>
+                <!-- Status Badges -->
+                <span *ngIf="alert.status === 'TRIGGERED'" class="badge badge-triggered">⚡ TRIGGERED</span>
+                <span *ngIf="alert.status === 'ACTIVE' || (!alert.status && alert.active)" class="badge badge-active">● ACTIVE</span>
+                <span *ngIf="alert.status === 'CANCELLED' || (!alert.status && !alert.active)" class="badge badge-cancelled">CANCELLED</span>
+              </div>
+
+              <div class="alert-prices">
+                <span>Condition: <strong>{{ alert.priceCondition === 'BELOW' || alert.priceCondition === 'LESS_THAN_OR_EQUAL' ? '≤ Below or Equal to' : '≥ Above or Equal to' }} ₹{{ alert.targetPrice }}/{{ alert.unit || 'kg' }}</strong></span>
+                <span *ngIf="alert.triggeredAt" class="text-purple">
+                  <i class="fa-solid fa-clock-rotate-left"></i> Triggered: {{ alert.triggeredAt | date:'medium' }}
+                </span>
+              </div>
+
+              <div class="alert-status">
+                <small class="text-muted">Created on {{ (alert.createdAt || 'Recent') | date:'mediumDate' }}</small>
+              </div>
+            </div>
+
+            <!-- Action: Cancel Button for Active Alerts -->
+            <div class="alert-actions">
+              <button *ngIf="alert.status === 'ACTIVE' || (!alert.status && alert.active)"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="cancelAlert(alert.id)"
+                      title="Cancel this alert">
+                <i class="fa-solid fa-ban"></i> Cancel Alert
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="priceAlerts.length === 0" class="empty-state">
+          <i class="fa-regular fa-chart-bar fa-3x mb-3 text-muted"></i>
+          <h4>No Price Alerts Yet</h4>
+          <p class="text-muted" *ngIf="isFarmer">Set a target price for any crop and mandi to receive automatic alerts when mandi prices match your criteria.</p>
+          <p class="text-muted" *ngIf="!isFarmer">Price alert subscriptions are available for registered Farmers.</p>
+          <button *ngIf="isFarmer" class="btn btn-sm btn-primary mt-2" (click)="openCreateAlertModal()">
+            <i class="fa-solid fa-plus"></i> Set Your First Price Alert
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Create Farmer Price Alert -->
+<div class="modal-backdrop" *ngIf="isSubscribeModalOpen" (click)="isSubscribeModalOpen = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-chart-line text-green"></i> Set Farmer Price Alert</h3>
+      <button class="close-btn" (click)="isSubscribeModalOpen = false">&times;</button>
+    </div>
+    <form (ngSubmit)="submitPriceAlert()">
+      <div class="modal-body">
+        <p class="text-muted small mb-3">You will receive an instant notification whenever the mandi market price reaches your target rate.</p>
+
+        <!-- Crop Dropdown -->
+        <div class="form-group mb-3">
+          <label>Select Crop *</label>
+          <select [(ngModel)]="newAlert.cropName" name="alertCrop" class="form-control" required>
+            <option *ngFor="let c of availableCrops" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <!-- Mandi / Location Dropdown -->
+        <div class="form-group mb-3">
+          <label>Select Mandi / Market Location *</label>
+          <select [(ngModel)]="newAlert.mandi" name="alertMandi" class="form-control">
+            <option *ngFor="let m of availableMandis" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+
+        <!-- Target Price Input -->
+        <div class="form-group mb-3">
+          <label>Target Price (₹ / KG) *</label>
+          <input type="number" [(ngModel)]="newAlert.targetPrice" name="alertPrice" class="form-control" placeholder="e.g. 35" min="1" step="0.5" required />
+        </div>
+
+        <!-- Alert Condition Dropdown -->
+        <div class="form-group mb-3">
+          <label>Alert Condition *</label>
+          <select [(ngModel)]="newAlert.priceCondition" name="alertCond" class="form-control" required>
+            <option value="ABOVE">ABOVE (Notify when price is ≥ target price)</option>
+            <option value="BELOW">BELOW (Notify when price is ≤ target price)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-navy" (click)="isSubscribeModalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-check"></i> Set Price Alert
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+<aside class="cropdeal-sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-header">
+    <div class="role-pill">
+      <i class="fa-solid fa-seedling text-green"></i>
+      <span class="role-title" *ngIf="!isCollapsed">{{ currentRole }} WORKSPACE</span>
+    </div>
+    <button class="collapse-btn" (click)="toggleCollapse.emit()" [title]="isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+      <i class="fa-solid" [class.fa-angles-left]="!isCollapsed" [class.fa-angles-right]="isCollapsed"></i>
+    </button>
+  </div>
+
+  <div class="sidebar-scroll">
+    <nav class="sidebar-nav">
+      <div class="nav-section-title" *ngIf="!isCollapsed">Main Navigation</div>
+      <a *ngFor="let item of navItems"
+         [routerLink]="item.route"
+         [queryParams]="item.queryParams || {}"
+         routerLinkActive="active"
+         class="sidebar-item"
+         [title]="item.label">
+        <div class="item-icon">
+          <i [class]="item.icon"></i>
+        </div>
+        <span class="item-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+        <span *ngIf="!isCollapsed && item.badge" class="badge {{ item.badgeClass }}">{{ item.badge }}</span>
+      </a>
+    </nav>
+
+  </div>
+</aside>

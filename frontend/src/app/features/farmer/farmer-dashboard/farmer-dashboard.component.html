@@ -1,0 +1,108 @@
+<div class="farmer-dashboard-layout">
+  <!-- Welcome Banner matching Screen 8 & 9 -->
+  <div class="farmer-welcome-banner">
+    <div class="banner-text-side">
+      <span class="welcome-lead">Welcome Back,</span>
+      <h1 class="farmer-title">{{ authService.currentUser?.name || 'Ramesh Kumar' }}</h1>
+      <p class="banner-sub">
+        <strong>Keep growing with CropDeal.</strong><br>
+        Access better prices, trusted buyers and new opportunities for your crops.
+      </p>
+    </div>
+
+    <div class="banner-farmer-badge">
+      <div class="farmer-banner-icon-badge">
+        <i class="fa-solid fa-wheat-awn"></i>
+      </div>
+      <div class="verified-pill">
+        <i class="fa-solid fa-shield-check"></i>
+        <div class="pill-meta">
+          <strong>Verified Farmer</strong>
+          <span>Member since Sep 2024</span>
+        </div>
+      </div>
+      <a routerLink="/profile" class="btn-edit-profile-banner">
+        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Big Graphic Metric Cards matching Screen 8 & 9 -->
+  <div class="metrics-grid-4">
+    <!-- Card 1: Total Crops -->
+    <div class="graphic-stat-card card-mint">
+      <div class="card-left">
+        <div class="round-icon bg-mint-icon">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-title">Total Crops</span>
+          <span class="stat-number">{{ crops.length || 12 }}</span>
+          <span class="stat-caption">Crops added by you</span>
+        </div>
+      </div>
+      <div class="card-right-graphic">
+        <div class="graphic-plant">
+          <i class="fa-solid fa-seedling"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Total Revenue -->
+    <div class="graphic-stat-card card-blue">
+      <div class="card-left">
+        <div class="round-icon bg-blue-icon">
+          <i class="fa-solid fa-indian-rupee-sign"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-title">Total Revenue</span>
+          <span class="stat-number">₹{{ (totalRevenueEarned > 0 ? totalRevenueEarned : 124500) | number }}</span>
+          <span class="stat-caption">From completed orders</span>
+        </div>
+      </div>
+      <div class="card-right-graphic">
+        <div class="graphic-money">
+          <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Place Bid / Live Bidding -->
+    <a routerLink="/farmer/bidding" class="graphic-stat-card card-gold clickable-card" style="text-decoration: none; cursor: pointer;">
+      <div class="card-left">
+        <div class="round-icon bg-gold-icon">
+          <i class="fa-solid fa-gavel"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-title">Place Bid &amp; Auctions</span>
+          <span class="stat-number">{{ auctions.length }} Active</span>
+          <span class="stat-caption">Click to place &amp; manage bids &rarr;</span>
+        </div>
+      </div>
+      <div class="card-right-graphic">
+        <div class="graphic-chart">
+          <i class="fa-solid fa-gavel"></i>
+        </div>
+      </div>
+    </a>
+
+    <!-- Card 4: Confirmed & Paid Orders -->
+    <a routerLink="/orders" class="graphic-stat-card card-purple" style="text-decoration: none; cursor: pointer;">
+      <div class="card-left">
+        <div class="round-icon bg-purple-icon">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-title">Confirmed &amp; Paid Orders</span>
+          <span class="stat-number">{{ confirmedPaidOrdersCount }}</span>
+          <span class="stat-caption">Payment completed by dealer</span>
+        </div>
+      </div>
+      <div class="card-right-graphic">
+        <div class="graphic-box">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>

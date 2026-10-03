@@ -1,0 +1,242 @@
+<div class="farmer-bidding-wrapper">
+  <!-- Banner matching Screen 18 -->
+  <div class="bidding-hero-banner">
+    <div class="banner-content">
+      <h1>Bidding</h1>
+      <p>Create new bids for your crops and manage all your active and past bids.</p>
+    </div>
+    <button class="btn btn-create-bidding" (click)="openCreateModal()">
+      <i class="fa-solid fa-plus"></i> Create New Bidding
+    </button>
+  </div>
+
+  <!-- Status Tabs matching Screen 18 -->
+  <div class="bidding-status-tabs">
+    <button class="tab-btn" [class.active]="selectedTab === 'ALL'" (click)="setTab('ALL')">
+      All Bids <span class="badge green">6</span>
+    </button>
+    <button class="tab-btn" [class.active]="selectedTab === 'ACTIVE'" (click)="setTab('ACTIVE')">
+      Active <span class="badge grey">3</span>
+    </button>
+    <button class="tab-btn" [class.active]="selectedTab === 'CLOSED'" (click)="setTab('CLOSED')">
+      Closed <span class="badge grey">3</span>
+    </button>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="bidding-filter-card">
+    <div class="filter-row">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()" placeholder="Search by crop name, grade or location..." />
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="cropFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Crops</option>
+          <option value="Paddy (Rice)">Paddy (Rice)</option>
+          <option value="Tomato">Tomato</option>
+          <option value="Onion">Onion</option>
+          <option value="Green Chilli">Green Chilli</option>
+        </select>
+      </div>
+
+      <div class="select-box">
+        <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="form-select">
+          <option value="ALL">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Closing Soon">Closing Soon</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+
+      <div class="date-range-box">
+        <i class="fa-regular fa-calendar"></i>
+        <span>Select Date Range</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card matching Screen 18 -->
+  <div class="bidding-table-card">
+    <div class="table-responsive">
+      <table class="bidding-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Crop Details</th>
+            <th>My Bidding Details</th>
+            <th>Bidding Period</th>
+            <th>Total Bids</th>
+            <th>Highest Bid</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredItems">
+            <td class="text-muted">{{ item.id }}</td>
+            <td class="crop-details-cell">
+              <img [src]="item.image" [alt]="item.cropName" class="crop-thumb" (error)="onCropImageError($event)" />
+              <div class="crop-meta">
+                <strong class="crop-title">{{ item.cropName }}</strong>
+                <small class="crop-sub">{{ item.grade }} • {{ item.quantity }} kg</small>
+              </div>
+            </td>
+            <td class="bidding-details-cell">
+              <span class="detail-row">Min Price: <strong>₹{{ item.minPrice }}/kg</strong></span>
+              <span class="detail-row">Expected Price: <strong>₹{{ item.expectedPrice }}/kg</strong></span>
+            </td>
+            <td class="period-cell">
+              <div class="period-wrap">
+                <i class="fa-regular fa-calendar text-muted"></i>
+                <div class="period-text">
+                  <span>{{ item.startDate }}</span>
+                  <small>to</small>
+                  <span>{{ item.endDate }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="total-bids-cell">
+              <strong class="total-bids-number">{{ item.totalBids }}</strong>
+            </td>
+            <td class="highest-bid-cell">
+              <strong class="highest-price">₹{{ item.highestBid }}/kg</strong>
+              <small class="highest-dealer">by {{ item.highestBidder }}</small>
+            </td>
+            <td>
+              <span class="status-pill" [ngClass]="item.statusClass">
+                ● {{ item.status }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-row">
+                <button class="btn-view-bids" (click)="openViewBids(item)">
+                  <i class="fa-regular fa-eye"></i> View Bids
+                </button>
+                <button class="btn-more" title="More options">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bidding-pagination">
+      <span>Showing 1 to {{ filteredItems.length }} of 6 bids</span>
+      <div class="pag-btns">
+        <button class="pag-btn">&lt;</button>
+        <button class="pag-btn active">1</button>
+        <button class="pag-btn">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create New Bidding -->
+<div class="modal-backdrop" *ngIf="isCreateModalOpen" (click)="isCreateModalOpen = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-gavel text-green"></i> Create New Bidding Auction</h3>
+      <button class="close-x" (click)="isCreateModalOpen = false">&times;</button>
+    </div>
+    <form (ngSubmit)="submitCreate()">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label>Crop Name *</label>
+            <input type="text" [(ngModel)]="newBidding.cropName" name="bCrop" class="form-control" placeholder="e.g. Basmati Rice, Sharbati Wheat" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>Quantity (KG) *</label>
+            <input type="number" [(ngModel)]="newBidding.quantity" name="bQty" class="form-control" min="1" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Starting Price (₹ / KG) *</label>
+          <input type="number" [(ngModel)]="newBidding.startingPrice" name="bStartPrice" class="form-control" min="1" step="0.5" placeholder="Base auction price" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Start Date *</label>
+            <input type="date" [(ngModel)]="newBidding.startDate" name="bStartDate" class="form-control" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>Start Time *</label>
+            <input type="time" [(ngModel)]="newBidding.startTime" name="bStartTime" class="form-control" required />
+          </div>
+        </div>
+
+
+
+        <div class="form-group">
+          <label>Crop Image (Upload / URL)</label>
+          <input type="text" [(ngModel)]="newBidding.imageUrl" name="bImageUrl" class="form-control" placeholder="Paste image URL or select a sample below" />
+          <div class="quick-img-row" style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
+            <span style="font-size: 0.78rem; color: #64748B;">Quick pick:</span>
+            <button type="button" *ngFor="let sample of sampleImages" (click)="newBidding.imageUrl = sample.url" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; border: 1px solid #CBD5E1; background: #FFF; cursor: pointer;">
+              {{ sample.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="isCreateModalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-save">Launch Bidding</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: View Bids -->
+<div class="modal-backdrop" *ngIf="isViewBidsModalOpen && activeItem" (click)="isViewBidsModalOpen = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-list text-green"></i> Bids Received for {{ activeItem.cropName }}</h3>
+      <button class="close-x" (click)="isViewBidsModalOpen = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted small">Current Highest Bid: <strong>₹{{ activeItem.highestBid }}/kg</strong> by <strong>{{ activeItem.highestBidder }}</strong></p>
+      <div class="table-responsive">
+        <table class="table-clean">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bidder Name</th>
+              <th>Bid (₹/kg)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><strong>{{ activeItem.highestBidder }}</strong></td>
+              <td class="text-green font-bold">₹{{ activeItem.highestBid }}</td>
+              <td><span class="badge badge-success">Highest</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Karthik Traders</td>
+              <td>₹{{ activeItem.highestBid - 2 }}</td>
+              <td><span class="badge badge-secondary">Active</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Naveen Agro</td>
+              <td>₹{{ activeItem.highestBid - 3 }}</td>
+              <td><span class="badge badge-secondary">Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-save" (click)="isViewBidsModalOpen = false">Close</button>
+    </div>
+  </div>
+</div>

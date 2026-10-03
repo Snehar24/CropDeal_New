@@ -1,0 +1,53 @@
+<div class="cropdeal-app-root">
+
+  <!-- If NOT auth page, render top navbar -->
+  <app-navbar *ngIf="!isAuthPage" (toggleSidebar)="toggleSidebar()"></app-navbar>
+
+  <!-- Auth pages: no navbar, no sidebar, full-screen layout -->
+  <main *ngIf="isAuthPage" class="auth-full-page">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Authenticated Dashboard / Management pages: with Sidebar -->
+  <div *ngIf="!isAuthPage && showSidebar" class="app-body-container">
+    <app-sidebar
+      [isCollapsed]="isSidebarCollapsed"
+      [class.mobile-open]="isSidebarMobileOpen"
+      (toggleCollapse)="toggleSidebar()">
+    </app-sidebar>
+
+    <div class="sidebar-overlay"
+         [class.visible]="isSidebarMobileOpen"
+         (click)="closeMobileSidebar()">
+    </div>
+
+    <main class="page-content" [class.sidebar-collapsed]="isSidebarCollapsed">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Public or Full-Width pages: without Sidebar -->
+  <main *ngIf="!isAuthPage && !showSidebar" class="public-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- AI Chatbot on all non-auth pages -->
+  <app-chatbot *ngIf="!isAuthPage"></app-chatbot>
+
+  <!-- Global Toast Notification Container -->
+  <div class="toast-container" *ngIf="toasts.length > 0">
+    <div *ngFor="let t of toasts" class="toast" [ngClass]="t.type">
+      <i class="fa-solid"
+         [class.fa-circle-check]="t.type === 'success'"
+         [class.fa-triangle-exclamation]="t.type === 'warning'"
+         [class.fa-circle-xmark]="t.type === 'error'"
+         [class.fa-circle-info]="t.type === 'info'">
+      </i>
+      <div class="toast-text">
+        <strong *ngIf="t.title">{{ t.title }}</strong>
+        <p>{{ t.message }}</p>
+      </div>
+      <button class="toast-close" (click)="removeToast(t.id)">&times;</button>
+    </div>
+  </div>
+</div>
